@@ -1,9 +1,28 @@
 <?php
 
-use App\Livewire\Welcome;
+use App\Livewire\Admin\Dashboard;
+use App\Livewire\Admin\User;
+use App\Livewire\Admin\Property;
+use App\Livewire\Auth\Login;
+use App\Livewire\Auth\Register;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome');
 Route::view('/imovel', 'imovel');
 Route::view('/imoveis', 'imoveis');
-Route::get('/users', Welcome::class);
+// Route::get('/users', Welcome::class);
+
+Route::get('/login', Login::class)->name('login');
+Route::get('/register', Register::class)->name('register');
+
+Route::middleware('auth')->name('admin.')->prefix('admin')->group(function () {
+    Route::get('/', Dashboard::class)->name('dashboard');
+
+    Route::get('/properties', Property\Index::class)->name('properties.index');
+    Route::get('/properties/create', Property\Create::class)->name('properties.create');
+
+    Route::get('/users', User\Index::class)->name('users.index');
+    Route::get('/users/create', User\Create::class)->name('users.create');
+
+    Route::get('/site-settings', \App\Livewire\Admin\SiteSettings::class)->name('site-settings');
+});

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{{-- <html lang="pt-BR" x-data="{ darkMode: false }" :class="{ 'dark': darkMode }"> --}}
 <html lang="pt-BR" x-data="{ darkMode: false }" :class="{ 'dark': darkMode }">
 
 <head>
@@ -25,21 +26,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        :root {
+        /* :root {
             --primary: #3b82f6;
             --secondary: #10b981;
             --accent: #f59e0b;
             --neutral: #1f2937;
             --base-100: #ffffff;
-        }
+        } */
 
-        .dark {
+        /* .dark {
             --primary: #60a5fa;
             --secondary: #34d399;
             --accent: #fbbf24;
             --neutral: #d1d5db;
             --base-100: #1f2937;
-        }
+        } */
 
         body {
             font-family: 'Poppins', sans-serif;
@@ -122,7 +123,7 @@
         <div class="container mx-auto px-4">
             <div class="navbar">
                 <div class="flex-1">
-                    <a href="#" class="btn btn-ghost px-0">
+                    <a href="/" class="btn btn-ghost px-0">
                         <div class="flex items-center">
                             <div class="w-10 mr-2">
                                 <img src="https://placehold.co/400x400/3b82f6/white?text=IM" alt="Logo"
@@ -141,6 +142,11 @@
                             <li><a href="#destaques" class="font-medium hover:text-primary">Destaques</a></li>
                             <li><a href="#sobre" class="font-medium hover:text-primary">Sobre</a></li>
                             <li><a href="#contato" class="font-medium hover:text-primary">Contato</a></li>
+                            @if(auth()->check())
+                                <li><a href="/admin" class="font-medium hover:text-primary">Dashboard</a></li>
+                            @else
+                                <li><a href="/login" class="font-medium hover:text-primary">Login</a></li>
+                            @endif
                         </ul>
                     </nav>
 
@@ -193,6 +199,7 @@
                     <li><a href="#destaques" class="font-medium">Destaques</a></li>
                     <li><a href="#sobre" class="font-medium">Sobre</a></li>
                     <li><a href="#contato" class="font-medium">Contato</a></li>
+                    <li><a href="/login" class="font-medium">Login</a></li>
                 </ul>
 
                 <div class="divider my-4"></div>
@@ -390,7 +397,7 @@
     <!-- Hero com Busca Avançada -->
     {{-- <section style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); background-size: cover; background-position: center; background-repeat: no-repeat;" class="relative py-20 bg-base-200 bg-[url('https://images.unsplash.com/photo-1486312338219-fe70aa2a6f43?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1500&q=80')] bg-cover bg-center bg-no-repeat"> --}}
     <section class="relative py-20 bg-linear-to-t from-green-300 to-blue-300 ">
-        <div class="container mx-auto px-4">
+        <div class="container mx-auto px-4 mt-18">
             <div class="flex flex-col lg:flex-row items-center gap-12">
                 <div class="lg:w-1/2">
                     <h1 class="text-4xl md:text-5xl font-bold mb-6">
