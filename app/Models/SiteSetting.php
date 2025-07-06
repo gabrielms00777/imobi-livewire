@@ -20,10 +20,13 @@ class SiteSetting extends Model
         'hero_title', 'hero_subtitle', 'hero_image',
         'about_title', 'about_content', 'about_image'
     ];
-    
-    protected $casts = [
-        'about_content' => 'string',
-    ];
+
+    public function casts()
+    {
+        return [
+            'about_content' => 'string',
+        ];
+    }
     
     // Retorna a instância única (singleton)
     public static function firstOrNew()

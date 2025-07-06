@@ -47,7 +47,7 @@ class SiteSettings extends Component
     public string $about_content = '';
     public $about_image;
 
-    public ?string $siteMetaImage = null;
+    // public ?string $siteMetaImage = null;
 
     protected $rules = [
         'site_name' => 'required|string|max:100',
@@ -79,7 +79,7 @@ class SiteSettings extends Component
     {
         $settings = SiteSetting::firstOrNew();
 
-        $this->siteMetaImage = SiteSetting::first()?->meta_image;
+        // $this->siteMetaImage = SiteSetting::first()?->meta_image;
 
         // Preenche todos os campos com valores existentes
         foreach ($settings->toArray() as $key => $value) {
@@ -87,6 +87,7 @@ class SiteSettings extends Component
                 $this->$key = $value ?? '';
             }
         }
+        // dd($settings);
     }
 
     public function save()
