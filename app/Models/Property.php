@@ -13,82 +13,115 @@ use Illuminate\Support\Str;
 class Property extends Model implements HasMedia
 {
     /** @use HasFactory<\Database\Factories\PropertyFactory> */
-    use HasFactory;
-    use HasFactory, SoftDeletes, InteractsWithMedia;
+    // use SoftDeletes;
+    use HasFactory, InteractsWithMedia;
 
     protected $fillable = [
+        'user_id',
+        'company_id',
         'title',
-        'slug',
         'description',
-        'type',
-        'purpose',
-        'status',
         'price',
-        'rent_price',
-        'currency',
-        'bedrooms',
-        'bathrooms',
-        'garage_spaces',
-        'area',
-        'total_area',
-        'construction_area',
-        'floors',
-        'year_built',
-        'street',
-        'number',
-        'complement',
-        'neighborhood',
+        'address',
         'city',
         'state',
         'zip_code',
-        'latitude',
-        'longitude',
-        'featured',
-        'video_url',
-        'virtual_tour_url',
+        'property_type',
+        'transaction_type',
+        'bedrooms',
+        'bathrooms',
+        'suites',
+        'area',
+        'garage_spaces',
         'amenities',
-        'meta_title',
-        'meta_description',
-        'user_id'
+        'status',
+        'is_featured',
+        'main_image_url',
     ];
 
     protected $casts = [
+        'price' => 'float',
+        'area' => 'float',
+        'is_featured' => 'boolean',
         'amenities' => 'array',
-        'featured' => 'boolean',
-        'price' => 'decimal:2',
-        'rent_price' => 'decimal:2',
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            $model->slug = Str::slug($model->title);
-        });
-
-        static::updating(function ($model) {
-            // Opcional: só atualiza o slug se o título mudou
-            if ($model->isDirty('title')) {
-                $model->slug = Str::slug($model->title);
-            }
-        });
-    }
-
-    // Configuração do slug
-    public function getSlugOptions(): SlugOptions
-    {
-        return SlugOptions::create()
-            ->generateSlugsFrom('title')
-            ->saveSlugsTo('slug')
-            ->doNotGenerateSlugsOnUpdate();
-    }
-
-    // Relacionamentos
+    // Relação com o usuário que cadastrou (corretor)
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
+    // Relação com a imobiliária proprietária do imóvel
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    // protected $fillable = [
+    //     'title',
+    //     'slug',
+    //     'description',
+    //     'type',
+    //     'purpose',
+    //     'status',
+    //     'price',
+    //     'rent_price',
+    //     'currency',
+    //     'bedrooms',
+    //     'bathrooms',
+    //     'garage_spaces',
+    //     'area',
+    //     'total_area',
+    //     'construction_area',
+    //     'floors',
+    //     'year_built',
+    //     'street',
+    //     'number',
+    //     'complement',
+    //     'neighborhood',
+    //     'city',
+    //     'state',
+    //     'zip_code',
+    //     'latitude',
+    //     'longitude',
+    //     'featured',
+    //     'video_url',
+    //     'virtual_tour_url',
+    //     'amenities',
+    //     'meta_title',
+    //     'meta_description',
+    //     'user_id'
+    // ];
+
+    // protected $casts = [
+    //     'amenities' => 'array',
+    //     'featured' => 'boolean',
+    //     'price' => 'decimal:2',
+    //     'rent_price' => 'decimal:2',
+    // ];
+
+    // protected static function boot()
+    // {
+    //     parent::boot();
+
+    //     static::creating(function ($model) {
+    //         $model->slug = Str::slug($model->title);
+    //     });
+
+    //     static::updating(function ($model) {
+    //         // Opcional: só atualiza o slug se o título mudou
+    //         if ($model->isDirty('title')) {
+    //             $model->slug = Str::slug($model->title);
+    //         }
+    //     });
+    // }
+
+    // Relacionamentos
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
 
     // Media collections
     public function registerMediaCollections(): void

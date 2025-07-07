@@ -56,28 +56,33 @@
             <x-menu activate-by-route>
 
                 {{-- User --}}
-                @if ($user = auth()->user())
-                    <x-menu-separator />
+                @php
+                    $user = auth()->user();
+                    $slug = $user->slug ?? null;
+                    if(!$slug){
+                        $slug = $user->company->slug;
+                    }
+                @endphp
+                <x-menu-separator />
 
-                    <x-list-item :item="$user" value="name" sub-value="email" no-separator no-hover
-                        class="-mx-2 !-my-2 rounded">
-                        <x-slot:actions>
-                            <x-button icon="o-power" class="btn-circle btn-ghost btn-xs" tooltip-left="logoff"
-                                no-wire-navigate link="/logout" />
-                        </x-slot:actions>
-                    </x-list-item>
+                <x-list-item :item="$user" value="name" sub-value="email" no-separator no-hover
+                    class="-mx-2 !-my-2 rounded">
+                    <x-slot:actions>
+                        <x-button icon="o-power" class="btn-circle btn-ghost btn-xs" tooltip-left="logoff"
+                            no-wire-navigate link="/logout" />
+                    </x-slot:actions>
+                </x-list-item>
 
-                    <x-menu-separator />
-                @endif
+                <x-menu-separator />
 
                 <x-menu-item title="Dashboard" icon="o-sparkles" link="/admin" />
                 <x-menu-item title="Imoveis" icon="o-sparkles" link="/admin/properties" />
 
                 <x-menu-sub title="Configurações" icon="o-cog-6-tooth">
                     <x-menu-item title="Usuarios" icon="o-wifi" :link="route('admin.users.index')" />
-                    <x-menu-item title="Site" icon="o-archive-box" :link="route('admin.site-settings')" />
+                    <x-menu-item title="Site" icon="o-archive-box" :link="route('admin.tenant-settings.index')" />
                 </x-menu-sub>
-                <x-menu-item title="ir para o site" icon="o-sparkles" link="/" />
+                <x-menu-item title="ir para o site" icon="o-sparkles" :link="route('tenant.home', ['tenantSlug' => $slug])" />
             </x-menu>
         </x-slot:sidebar>
 

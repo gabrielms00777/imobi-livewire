@@ -14,9 +14,13 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('slug')->unique()->nullable(); // Slug único para o usuário, pode ser usado para URLs amigáveis
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('set null'); // Vincula usuário a uma imobiliária
+            $table->string('user_type')->default('real_estate_agent'); // Ex: 'admin', 'real_estate_agent', 'company_agent', 'company_admin'
+            $table->string('creci_number')->nullable(); // Número do CRECI para corretores
             $table->rememberToken();
             $table->timestamps();
         });

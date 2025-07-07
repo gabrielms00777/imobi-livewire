@@ -14,8 +14,8 @@
     {{-- @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
     @else --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    {{-- <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> --}}
 
     <!-- Alpine JS -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -28,9 +28,9 @@
 
     <style>
         :root {
-            --color-primary: {{ $tenantSettings->primary_color ?? '#3b82f6' }};
-            --color-secondary: {{ $tenantSettings->secondary_color ?? '#f63b3b' }};
-            --color-neutral: {{ $tenantSettings->text_color }};
+            --color-primary: {{ $siteSettings['primary_color'] ?? '#3b82f6' }};
+            --color-secondary: {{ $siteSettings['secondary_color'] ?? '#f63b3b' }};
+            --color-neutral: {{ $siteSettings['text_color'] }};
         }
 
         body {
@@ -74,26 +74,48 @@
 
         <div class="container mx-auto px-4">
             <div class="navbar">
-                <div class="flex-1">
+                {{-- <div class="flex-1">
                     <a href="/" class="px-0">
                         <div class="flex items-center">
-                            @if ($tenantSettings->logo && $tenantSettings->show_logo_and_name)
-                                <img src="{{ $tenantSettings->logo }}" alt="Logo {{ $tenantSettings->site_name }}"
-                                    class="h-8 w-auto mr-2 rounded-lg">
+                            @if ($siteSettings['logo'])
+                                <img src="{{ $siteSettings['logo'] }}" alt="Logo {{ $siteSettings['site_name'] }}"
+                                    class="h-10 w-auto rounded-lg">
+                            @elseif ($siteSettings['site_name'])
                                 @php
-                                    $names = explode(' ', $tenantSettings->site_name);
+                                    $names = explode(' ', $siteSettings['site_name']);
                                 @endphp
                                 <span class="text-xl font-bold text-primary">{{ $names[0] ?? '' }}
                                     @if (isset($names[1]))
                                         <span class="text-secondary">{{ $names[1] }}</span>
                                     @endif
                                 </span>
-                            @elseif ($tenantSettings->logo)
-                                <img src="{{ $tenantSettings->logo }}" alt="Logo {{ $tenantSettings->site_name }}"
-                                    class="h-10 w-auto rounded-lg">
-                            @elseif ($tenantSettings->site_name)
+                            @else
+                                <span class="text-xl font-bold text-primary">Seu Site</span>
+                            @endif
+                        </div>
+                    </a>
+                </div> --}}
+
+                <div class="flex-1">
+                    <a href="/" class="px-0">
+                        <div class="flex items-center">
+                            @if ($siteSettings['logo'] && $siteSettings['show_logo_and_name'])
+                                <img src="{{ $siteSettings['logo'] }}" alt="Logo {{ $siteSettings['site_name'] }}"
+                                    class="h-8 w-auto mr-2 rounded-lg">
                                 @php
-                                    $names = explode(' ', $tenantSettings->site_name);
+                                    $names = explode(' ', $siteSettings['site_name']);
+                                @endphp
+                                <span class="text-xl font-bold text-primary">{{ $names[0] ?? '' }}
+                                    @if (isset($names[1]))
+                                        <span class="text-secondary">{{ $names[1] }}</span>
+                                    @endif
+                                </span>
+                            @elseif ($siteSettings['logo'])
+                                <img src="{{ $siteSettings['logo'] }}" alt="Logo {{ $siteSettings['site_name'] }}"
+                                    class="h-10 w-auto rounded-lg">
+                            @elseif ($siteSettings['site_name'])
+                                @php
+                                    $names = explode(' ', $siteSettings['site_name']);
                                 @endphp
                                 <span class="text-xl font-bold text-primary">{{ $names[0] ?? '' }}
                                     @if (isset($names[1]))
@@ -161,30 +183,30 @@
                     <div class="divider divider-horizontal h-6 mx-2"></div>
 
                     <div class="flex items-center gap-2 mr-4">
-                        @if ($tenantSettings->social_facebook)
-                            <a href="{{ $tenantSettings->social_facebook }}"
+                        @if ($contactInfo['social_media']['facebook'])
+                            <a href="{{ $contactInfo['social_media']['facebook'] }}"
                                 class="btn btn-ghost btn-circle btn-sm hover:text-primary">
                                 <i class="fab fa-facebook-f"></i>
                             </a>
                         @endif
-                        @if ($tenantSettings->social_instagram)
-                            <a href="{{ $tenantSettings->social_instagram }}"
+                        @if ($contactInfo['social_media']['instagram'])
+                            <a href="{{ $contactInfo['social_media']['instagram'] }}"
                                 class="btn btn-ghost btn-circle btn-sm hover:text-primary">
                                 <i class="fab fa-instagram"></i>
                             </a>
                         @endif
-                        @if ($tenantSettings->social_linkedin)
-                            <a href="{{ $tenantSettings->social_linkedin }}"
+                        @if ($contactInfo['social_media']['linkedin'])
+                            <a href="{{ $contactInfo['social_media']['linkedin'] }}"
                                 class="btn btn-ghost btn-circle btn-sm hover:text-primary">
                                 <i class="fab fa-linkedin-in"></i>
                             </a>
                         @endif
                     </div>
 
-                    <a href="https://wa.me/{{ $tenantSettings->social_whatsapp }}"
+                    <a href="https://wa.me/{{ $contactInfo['whatsapp'] }}"
                         class="btn btn-primary btn-sm md:btn-md gap-2">
                         <i class="fab fa-whatsapp"></i>
-                        <span class="hidden sm:inline">{{ $tenantSettings->social_phone }}</span>
+                        <span class="hidden sm:inline">{{ $contactInfo['phone'] }}</span>
                     </a>
                 </div>
 
@@ -223,53 +245,137 @@
                 <div class="divider my-4"></div>
 
                 <div class="flex justify-center gap-4 mb-6">
-                    @if ($tenantSettings->social_facebook)
-                        <a href="{{ $tenantSettings->social_facebook }}" class="btn btn-ghost btn-circle">
+                    @if ($contactInfo['social_media']['facebook'])
+                        <a href="{{ $contactInfo['social_media']['facebook'] }}" class="btn btn-ghost btn-circle">
                             <i class="fab fa-facebook-f"></i>
                         </a>
                     @endif
-                    @if ($tenantSettings->social_instagram)
-                        <a href="{{ $tenantSettings->social_instagram }}" class="btn btn-ghost btn-circle">
+                    @if ($contactInfo['social_media']['instagram'])
+                        <a href="{{ $contactInfo['social_media']['instagram'] }}" class="btn btn-ghost btn-circle">
                             <i class="fab fa-instagram"></i>
                         </a>
                     @endif
-                    @if ($tenantSettings->social_linkedin)
-                        <a href="{{ $tenantSettings->social_linkedin }}" class="btn btn-ghost btn-circle">
+                    @if ($contactInfo['social_media']['linkedin'])
+                        <a href="{{ $contactInfo['social_media']['linkedin'] }}" class="btn btn-ghost btn-circle">
                             <i class="fab fa-linkedin-in"></i>
                         </a>
                     @endif
                 </div>
 
-                <a href="https://wa.me/{{ $tenantSettings->social_whatsapp }}" class="btn btn-primary gap-2">
+                <a href="https://wa.me/5511999999999" class="btn btn-primary gap-2">
                     <i class="fab fa-whatsapp"></i>
-                    {{ $tenantSettings->contact_phone }}
+                    (11) 99999-9999
                 </a>
             </div>
         </div>
     </header>
 
+    {{-- <section class="relative py-20 bg-linear-to-t from-green-400 to-blue-400 ">
+        <div class="container mx-auto px-4 mt-18">
+            <div class="flex flex-col lg:flex-row items-center gap-12">
+                <div class="lg:w-1/2">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                        Encontre o imóvel <span class="text-primary">perfeito</span>
+                    </h1>
+                    <p class="text-xl mb-8">
+                        Mais de 1.000 propriedades disponíveis com as melhores condições do mercado
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <div class="flex -space-x-2">
+                            <div class="avatar">
+                                <div class="w-12 h-12 rounded-full border-2 border-base-100">
+                                    <img src="https://randomuser.me/api/portraits/women/44.jpg" />
+                                </div>
+                            </div>
+                            <div class="avatar">
+                                <div class="w-12 h-12 rounded-full border-2 border-base-100">
+                                    <img src="https://randomuser.me/api/portraits/men/32.jpg" />
+                                </div>
+                            </div>
+                            <div class="avatar">
+                                <div class="w-12 h-12 rounded-full border-2 border-base-100">
+                                    <img src="https://randomuser.me/api/portraits/women/68.jpg" />
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="font-bold">+100 clientes satisfeitos</div>
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:w-1/2 w-full">
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <h2 class="card-title mb-4">O que você está buscando?</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <select class="select select-bordered">
+                                    <option disabled selected>Tipo de Imóvel</option>
+                                    <option>Casa</option>
+                                    <option>Apartamento</option>
+                                    <option>Terreno</option>
+                                    <option>Comercial</option>
+                                </select>
+                                <select class="select select-bordered">
+                                    <option disabled selected>Localização</option>
+                                    <option>São Paulo</option>
+                                    <option>Rio de Janeiro</option>
+                                    <option>Belo Horizonte</option>
+                                </select>
+                                <select class="select select-bordered">
+                                    <option disabled selected>Faixa de Preço</option>
+                                    <option>Até R$ 300.000</option>
+                                    <option>R$ 300-600 mil</option>
+                                    <option>R$ 600-1 milhão</option>
+                                </select>
+                                <select class="select select-bordered">
+                                    <option disabled selected>Quartos</option>
+                                    <option>1+</option>
+                                    <option>2+</option>
+                                    <option>3+</option>
+                                </select>
+                            </div>
+                            <div class="card-actions justify-end mt-4">
+                                <button class="btn btn-primary w-full">
+                                    <i class="fas fa-search mr-2"></i> Buscar Imóveis
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section> --}}
+
     <section
-        class="relative py-20 @if ($tenantSettings->hero_background_type === 'gradient') bg-linear-{{ $tenantSettings->hero_gradient_direction }} from-{{ $tenantSettings->hero_gradient_from_color }} to-{{ $tenantSettings->hero_gradient_to_color }} @else overflow-hidden @endif">
+        class="relative py-20 @if ($heroSection['background_type'] === 'gradient') bg-linear-{{ $heroSection['gradient']['direction'] }} from-{{ $heroSection['gradient']['from_color'] }} to-{{ $heroSection['gradient']['to_color'] }} @else overflow-hidden @endif">
         {{-- Condicional para exibir imagem de fundo --}}
-        @if ($tenantSettings->hero_background_type === 'image')
-            <img src="{{ $tenantSettings->hero_image_url }}" alt="{{ $tenantSettings->hero_image_alt_text }}"
-                class="{{ $tenantSettings->hero_image_class }}">
+        @if ($heroSection['background_type'] === 'image')
+            <img src="{{ $heroSection['image']['url'] }}" alt="{{ $heroSection['image']['alt_text'] }}"
+                class="{{ $heroSection['image']['class'] }}">
         @endif
 
         <div class="container mx-auto px-4 mt-18 relative z-10"> {{-- Adicionado relative z-10 para garantir que o conteúdo fique acima da imagem --}}
             <div class="flex flex-col lg:flex-row items-center gap-12">
                 {{-- Conteúdo textual e avatares (condicional) --}}
-                @if ($tenantSettings->show_text_content)
+                @if ($heroSection['show_text_content'])
                     <div class="lg:w-1/2"> {{-- Adicionei text-primary-content para herdar a cor do texto --}}
                         <h1 class="text-4xl md:text-5xl font-bold mb-6">
-                            {!! $tenantSettings->hero_title !!}
+                            {!! $heroSection['title'] !!}
                         </h1>
                         <p class="text-xl mb-8">
-                            {{ $tenantSettings->hero_description }}
+                            {{ $heroSection['description'] }}
                         </p>
                         <div class="flex items-center gap-4">
                             <div class="flex -space-x-2">
-                                @foreach ($tenantSettings->hero_avatars as $avatarUrl)
+                                @foreach ($heroSection['avatars'] as $avatarUrl)
                                     <div class="avatar">
                                         <div class="w-12 h-12 rounded-full border-2 border-base-100">
                                             <img src="{{ $avatarUrl }}" />
@@ -278,18 +384,18 @@
                                 @endforeach
                             </div>
                             <div>
-                                <div class="font-bold">{{ $tenantSettings->hero_clients_satisfied_text }}</div>
+                                <div class="font-bold">{{ $heroSection['clients_satisfied_text'] }}</div>
                                 <div class="flex text-yellow-400">
                                     {{-- Loop para estrelas cheias --}}
-                                    @for ($i = 0; $i < floor($tenantSettings->hero_stars_rating); $i++)
+                                    @for ($i = 0; $i < floor($heroSection['stars_rating']); $i++)
                                         <i class="fas fa-star"></i>
                                     @endfor
                                     {{-- Estrela pela metade, se houver --}}
-                                    @if ($tenantSettings->stars_rating - floor($tenantSettings->hero_stars_rating) >= 0.5)
+                                    @if ($heroSection['stars_rating'] - floor($heroSection['stars_rating']) >= 0.5)
                                         <i class="fas fa-star-half-alt"></i>
                                     @endif
                                     {{-- Estrelas vazias para completar 5, se desejar --}}
-                                    @for ($i = 0; $i < 5 - ceil($tenantSettings->hero_stars_rating); $i++)
+                                    @for ($i = 0; $i < 5 - ceil($heroSection['stars_rating']); $i++)
                                         <i class="far fa-star"></i> {{-- 'far' para estrela vazia --}}
                                     @endfor
                                 </div>
@@ -302,12 +408,12 @@
                 <div class="lg:w-1/2 w-full">
                     <div class="card bg-base-100 shadow-xl">
                         <div class="card-body">
-                            <h2 class="card-title mb-4">{{ $tenantSettings->hero_form_title }}</h2>
+                            <h2 class="card-title mb-4">{{ $heroSection['form_title'] }}</h2>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                @foreach (json_decode($tenantSettings->hero_select_options) as $select)
+                                @foreach ($heroSection['select_options'] as $select)
                                     <select class="select select-bordered">
-                                        <option disabled selected>{{ $select->placeholder }}</option>
-                                        @foreach ($select->options as $option)
+                                        <option disabled selected>{{ $select['placeholder'] }}</option>
+                                        @foreach ($select['options'] as $option)
                                             <option>{{ $option }}</option>
                                         @endforeach
                                     </select>
@@ -315,8 +421,8 @@
                             </div>
                             <div class="card-actions justify-end mt-4">
                                 <button class="btn btn-primary w-full">
-                                    <i class="{{ $tenantSettings->hero_search_button_icon }} mr-2"></i>
-                                    {{ $tenantSettings->hero_search_button_text }}
+                                    <i class="{{ $heroSection['search_button_icon'] }} mr-2"></i>
+                                    {{ $heroSection['search_button_text'] }}
                                 </button>
                             </div>
                         </div>
@@ -340,33 +446,34 @@
                     <div class="property-card card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 animate-fade-in"
                         style="animation-delay: 0.1s">
                         <figure>
-                            <img src="{{ $property->image }}" alt="Casa moderna" class="h-64 w-full object-cover">
+                            <img src="{{ $property['image'] ?? 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}"
+                                alt="Casa moderna" class="h-64 w-full object-cover">
                             <span class="badge badge-primary absolute top-4 right-4">Destaque</span>
                         </figure>
                         <div class="card-body">
-                            <h3 class="card-title">{{ $property->title }}</h3>
+                            <h3 class="card-title">{{ $property['title'] }}</h3>
                             <div class="flex items-center text-yellow-500 mb-2">
                                 <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
-                                <span>{{ $property->address }}</span>
+                                <span>{{ $property['address'] }}</span>
                             </div>
                             <div class="flex justify-between items-center mb-4">
                                 <div>
                                     <i class="fas fa-bed mr-1"></i>
-                                    <span>{{ $property->bedrooms }} Quartos</span>
+                                    <span>{{ $property['bedrooms'] }} Quartos</span>
                                 </div>
                                 <div>
                                     <i class="fas fa-bath mr-1"></i>
-                                    <span>{{ $property->bathrooms }} Banheiros</span>
+                                    <span>{{ $property['bathrooms'] }} Banheiros</span>
                                 </div>
                                 <div>
                                     <i class="fas fa-ruler-combined mr-1"></i>
-                                    <span>{{ $property->area }}m²</span>
+                                    <span>{{ $property['area'] }}m²</span>
                                 </div>
                             </div>
                             <div class="flex justify-between items-center">
                                 <span class="text-xl font-bold text-primary">R$
-                                    {{ number_format($property->price, 0, ',', '.') }}</span>
-                                <a :href="route('tenant.properties', ['tenantSlug' => $tenant - > slug])"
+                                    {{ number_format($property['price'], 0, ',', '.') }}</span>
+                                <a :href="route('home.property', $property['id'])"
                                     class="btn btn-sm btn-secondary">Detalhes</a>
                             </div>
                         </div>
@@ -375,7 +482,7 @@
             </div>
 
             <div class="text-center mt-8">
-                <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug, 'filter' => 'destaque']) }}"
+                <a href="{{ route('home.properties', ['type' => 'destaque']) }}"
                     class="btn btn-outline btn-primary">Ver mais imóveis</a>
             </div>
         </div>
@@ -385,11 +492,11 @@
         <div class="container mx-auto px-4">
             <div class="flex flex-col lg:flex-row items-center gap-12">
                 <div class="lg:w-1/2 animate-fade-in">
-                    <img src="{{ $tenantSettings->about_image ?? 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}"
+                    <img src="{{ $aboutSection['image'] ?? 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}"
                         alt="Destaque da imobiliária" class="rounded-lg shadow-xl w-full h-auto">
                 </div>
                 <div class="lg:w-1/2 animate-fade-in" style="animation-delay: 0.2s">
-                    <h2 class="text-3xl font-bold mb-6">{{ $tenantSettings->about_title }}</h2>
+                    <h2 class="text-3xl font-bold mb-6">{{ $aboutSection['title'] }}</h2>
                     <p class="mb-4 text-lg">Somos uma imobiliária com mais de 20 anos de experiência no mercado,
                         ajudando famílias a encontrar o lar perfeito.</p>
                     <p class="mb-6">Nossa equipe de corretores altamente qualificados está pronta para oferecer o
@@ -397,14 +504,14 @@
                         atendimento e encontrar a solução ideal para suas necessidades imobiliárias.</p>
 
                     <div class="space-y-4">
-                        @foreach (json_decode($tenantSettings->about_features) as $feature)
+                        @foreach ($aboutSection['features'] as $feature)
                             <div class="flex items-start">
                                 <div class="text-primary mr-4 mt-1">
-                                    <i class="{{ $feature->icon ?? 'fas fa-check-circle' }} text-2xl"></i>
+                                    <i class="{{ $feature['icon'] ?? 'fas fa-check-circle' }} text-2xl"></i>
                                 </div>
                                 <div>
-                                    <h4 class="font-bold">{{ $feature->title }}</h4>
-                                    <p class="text-sm">{{ $feature->description }}</p>
+                                    <h4 class="font-bold">{{ $feature['title'] }}</h4>
+                                    <p class="text-sm">{{ $feature['description'] }}</p>
                                 </div>
                             </div>
                         @endforeach
@@ -428,53 +535,87 @@
                     <div class="property-card card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300 animate-fade-in"
                         style="animation-delay: 0.1s">
                         <figure>
-                            <img src="{{ $property->image ?? 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}"
-                                alt="{{ $property->title }}" class="h-48 w-full object-cover">
+                            <img src="{{ $property['image'] ?? 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}"
+                                alt="{{ $property['title'] }}" class="h-48 w-full object-cover">
                             <span class="badge badge-secondary absolute top-4 right-4">Novo</span>
                         </figure>
                         <div class="card-body p-4">
-                            <h3 class="card-title text-lg">{{ $property->title }}</h3>
+                            <h3 class="card-title text-lg">{{ $property['title'] }}</h3>
                             <div class="flex items-center text-sm mb-2">
                                 <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
-                                <span>{{ $property->address }}</span>
+                                <span>{{ $property['address'] }}</span>
                             </div>
                             <div class="flex justify-between items-center text-sm mb-3">
-                                @if ($property->bedrooms > 0)
+                                @if ($property['bedrooms'] > 0)
                                     {{-- Condição para exibir quartos apenas se for relevante --}}
                                     <div>
                                         <i class="fas fa-bed mr-1"></i>
-                                        <span>{{ $property->bedrooms }} Quartos</span>
+                                        <span>{{ $property['bedrooms'] }} Quartos</span>
                                     </div>
                                 @endif
-                                @if ($property->bathrooms > 0)
+                                @if ($property['bathrooms'] > 0)
                                     {{-- Condição para exibir banheiros apenas se for relevante --}}
                                     <div>
                                         <i class="fas fa-bath mr-1"></i>
-                                        <span>{{ $property->bathrooms }}
-                                            Banheiro{{ $property->bathrooms > 1 ? 's' : '' }}</span>
+                                        <span>{{ $property['bathrooms'] }}
+                                            Banheiro{{ $property['bathrooms'] > 1 ? 's' : '' }}</span>
                                     </div>
                                 @endif
                                 <div>
                                     <i class="fas fa-ruler-combined mr-1"></i>
-                                    <span>{{ $property->area }}m²</span>
+                                    <span>{{ $property['area'] }}m²</span>
                                 </div>
-                                @if ($property->type === 'terreno' && isset($property->vagas_garagem))
+                                @if ($property['type'] === 'terreno' && isset($property['vagas_garagem']))
                                     {{-- Exemplo de campo específico para terreno --}}
                                     <div>
                                         <i class="fas fa-car mr-1"></i>
-                                        <span>{{ $property->vagas_garagem }} Vagas</span>
+                                        <span>{{ $property['vagas_garagem'] }} Vagas</span>
                                     </div>
                                 @endif
                             </div>
                             <div class="flex justify-between items-center">
                                 <span class="font-bold text-primary">R$
-                                    {{ number_format($property->price, 0, ',', '.') }}</span>
-                                <a href="{{ $property->details_link ?? route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}"
+                                    {{ number_format($property['price'], 0, ',', '.') }}</span>
+                                <a href="{{ $property['details_link'] ?? route('home.property', $property['id']) }}"
                                     class="btn btn-xs btn-outline btn-primary">Detalhes</a>
                             </div>
                         </div>
                     </div>
                 @endforeach
+                {{-- <div class="property-card card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300 animate-fade-in"
+                    style="animation-delay: 0.1s">
+                    <figure>
+                        <img src="https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+                            alt="Apartamento compacto" class="h-48 w-full object-cover">
+                        <span class="badge badge-secondary absolute top-4 right-4">Novo</span>
+                    </figure>
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-lg">Apartamento Compacto</h3>
+                        <div class="flex items-center text-sm mb-2">
+                            <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
+                            <span>Centro, Curitiba</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm mb-3">
+                            <div>
+                                <i class="fas fa-bed mr-1"></i>
+                                <span>2 Quartos</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-bath mr-1"></i>
+                                <span>1 Banheiro</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-ruler-combined mr-1"></i>
+                                <span>65m²</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-primary">R$ 320.000</span>
+                            <button class="btn btn-xs btn-outline btn-primary">Detalhes</button>
+                        </div>
+                    </div>
+                </div> --}}
+
             </div>
         </div>
     </section>
@@ -483,34 +624,92 @@
         <div class="container mx-auto px-4 text-center">
             <h1 class="text-4xl md:text-5xl font-bold mb-6">
                 {{-- Usamos {!! !!} aqui para renderizar o HTML dentro da string (o <span>) --}}
-                {!! $tenantSettings->engagement_title !!}
+                {!! $sectionContent['title'] !!}
             </h1>
             <p class="text-xl mb-12 max-w-3xl mx-auto">
-                {{ $tenantSettings->engagement_description }}
+                {{ $sectionContent['description'] }}
             </p>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
-                @foreach (json_decode($tenantSettings->engagement_metrics) as $metric)
+                @foreach ($sectionContent['metrics'] as $metric)
                     <div class="text-center">
-                        <div class="text-4xl font-bold mb-2">{{ $tenantSettings->engagement_value }}</div>
-                        <div class="opacity-80">{{ $tenantSettings->engagement_description }}</div>
+                        <div class="text-4xl font-bold mb-2">{{ $metric['value'] }}</div>
+                        <div class="opacity-80">{{ $metric['description'] }}</div>
                     </div>
                 @endforeach
             </div>
 
             <div class="mt-12 flex flex-col sm:flex-row justify-center gap-4">
-                <a href="{{ $tenantSettings->engagement_button_properties_link }}" class="btn btn-secondary btn-lg">
-                    <i class="{{ $tenantSettings->engagement_button_properties_icon }} mr-2"></i>
-                    {{ $tenantSettings->engagement_button_properties_text }}
+                <a href="{{ $sectionContent['button_properties_link'] }}" class="btn btn-secondary btn-lg">
+                    <i class="{{ $sectionContent['button_properties_icon'] }} mr-2"></i>
+                    {{ $sectionContent['button_properties_text'] }}
                 </a>
-                <a href="{{ $tenantSettings->engagement_button_contact_link }}"
+                <a href="{{ $sectionContent['button_contact_link'] }}"
                     class="btn btn-outline btn-lg btn-primary-content">
-                    <i class="{{ $tenantSettings->engagement_button_contact_icon }} mr-2"></i>
-                    {{ $tenantSettings->engagement_button_contact_text }}
+                    <i class="{{ $sectionContent['button_contact_icon'] }} mr-2"></i>
+                    {{ $sectionContent['button_contact_text'] }}
                 </a>
             </div>
         </div>
     </section>
+
+    {{-- <section class="relative py-20 bg-primary text-primary-content">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                A melhor experiência em <span class="text-secondary">negócios imobiliários</span>
+            </h1>
+            <p class="text-xl mb-12 max-w-3xl mx-auto">
+                Conectamos você aos melhores imóveis com transparência e segurança
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+                <div class="text-center">
+                    <div class="text-4xl font-bold mb-2">1.200+</div>
+                    <div class="opacity-80">Imóveis disponíveis</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold mb-2">25+</div>
+                    <div class="opacity-80">Bairros atendidos</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold mb-2">98%</div>
+                    <div class="opacity-80">Satisfação dos clientes</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold mb-2">15+</div>
+                    <div class="opacity-80">Anos de experiência</div>
+                </div>
+            </div>
+
+            <div class="mt-12 flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#destaques" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-home mr-2"></i> Ver Imóveis
+                </a>
+                <a href="#contato" class="btn btn-outline btn-lg btn-primary-content">
+                    <i class="fas fa-phone-alt mr-2"></i> Falar com Corretor
+                </a>
+            </div>
+        </div>
+    </section> --}}
+
+    {{-- <section id="contato" class="py-16 bg-primary text-primary-content">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-4">Pronto para encontrar seu imóvel ideal?</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">Nossa equipe está pronta para te ajudar em todas as etapas do
+                processo.</p>
+
+            <div class="flex flex-col md:flex-row justify-center gap-4 max-w-2xl mx-auto">
+                <a href="tel:+5511999999999" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-phone-alt mr-2"></i>
+                    (11) 99999-9999
+                </a>
+                <a href="mailto:contato@imobiliaria.com" class="btn btn-accent btn-lg">
+                    <i class="fas fa-envelope mr-2"></i>
+                    Enviar Mensagem
+                </a>
+            </div>
+        </div>
+    </section> --}}
 
     <footer class="footer p-10 bg-neutral text-neutral-content">
         <div class="container mx-auto px-4">
@@ -519,19 +718,21 @@
                     <span class="footer-title">Imobiliária</span>
                     <p>Há mais de 20 anos ajudando pessoas a encontrar seu lar ideal.</p>
                     <div class="flex gap-4 mt-4">
-                        @if ($tenantSettings->social_facebook)
-                            <a href="{{ $tenantSettings->social_facebook }}" class="btn btn-circle btn-sm btn-ghost">
+                        @if ($contactInfo['social_media']['facebook'])
+                            <a href="{{ $contactInfo['social_media']['facebook'] }}"
+                                class="btn btn-circle btn-sm btn-ghost">
                                 <i class="fab fa-facebook-f"></i>
                             </a>
                         @endif
-                        @if ($tenantSettings->social_instagram)
-                            <a href="{{ $tenantSettings->social_instagram }}"
+                        @if ($contactInfo['social_media']['instagram'])
+                            <a href="{{ $contactInfo['social_media']['instagram'] }}"
                                 class="btn btn-circle btn-sm btn-ghost">
                                 <i class="fab fa-instagram"></i>
                             </a>
                         @endif
-                        @if ($tenantSettings->social_linkedin)
-                            <a href="{{ $tenantSettings->social_linkedin }}" class="btn btn-circle btn-sm btn-ghost">
+                        @if ($contactInfo['social_media']['linkedin'])
+                            <a href="{{ $contactInfo['social_media']['linkedin'] }}"
+                                class="btn btn-circle btn-sm btn-ghost">
                                 <i class="fab fa-linkedin-in"></i>
                             </a>
                         @endif
@@ -552,15 +753,15 @@
                     <span class="footer-title">Contato</span>
                     <div class="flex items-center mb-2">
                         <i class="fas fa-map-marker-alt mr-2"></i>
-                        <span>{{ $tenantSettings->contact_address }}</span>
+                        <span>{{ $contactInfo['address'] }}</span>
                     </div>
                     <div class="flex items-center mb-2">
                         <i class="fas fa-phone-alt mr-2"></i>
-                        <span>{{ $tenantSettings->contact_phone }}</span>
+                        <span>{{ $contactInfo['phone'] }}</span>
                     </div>
                     <div class="flex items-center">
                         <i class="fas fa-envelope mr-2"></i>
-                        <span>{{ $tenantSettings->contact_email }}</span>
+                        <span>{{ $contactInfo['email'] }}</span>
                     </div>
                 </div>
 
@@ -578,7 +779,7 @@
             </div>
 
             <div class="border-t w-full border-gray-700 mt-8 pt-8 text-center">
-                <p>&copy; {{ date('Y') }} {{ $tenantSettings->site_name }}. Todos os direitos reservados.</p>
+                <p>&copy; {{ date('Y') }} {{ $siteSettings['site_name'] }}. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>

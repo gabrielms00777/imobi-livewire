@@ -13,17 +13,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@admin',
-            'password' => 'admin',
-        ]);
 
         $this->call([
+            // SiteSettingSeeder::class, // REMOVA ou COMENTE esta linha se ela era para as configurações globais
+            CompanySeeder::class,
+            UserSeeder::class,
+            TenantSettingSeeder::class, // AGORA ESSA É PARA AS CONFIGURAÇÕES DOS TENANTS
             PropertySeeder::class,
-            SiteSettingSeeder::class
         ]);
     }
 }

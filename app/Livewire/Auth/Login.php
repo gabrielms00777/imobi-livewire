@@ -13,10 +13,10 @@ use Livewire\Attributes\Title;
 class Login extends Component
 {
     #[Rule('required|email')]
-    public string $email = 'admin@admin';
+    public string $email = 'joao@corretor.com';
  
     #[Rule('required')]
-    public string $password = 'admin';
+    public string $password = 'password';
  
     public function mount()
     {

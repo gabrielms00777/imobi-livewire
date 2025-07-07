@@ -3,23 +3,22 @@
 namespace Database\Seeders;
 
 use App\Models\Company;
-use App\Models\SiteSetting;
+use App\Models\TenantSetting;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Storage;
 
-class SiteSettingSeeder extends Seeder
+class TenantSettingSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-    */
+     */
     public function run(): void
     {
-        // Exemplo de configurações para a Mega Imóveis S.A.
+         // Exemplo de configurações para a Mega Imóveis S.A.
         $megaImoveis = Company::where('name', 'Mega Imóveis S.A.')->first();
         if ($megaImoveis) {
-            SiteSetting::create([
+            TenantSetting::create([
                 'configurable_id' => $megaImoveis->id,
                 'configurable_type' => Company::class, // Use o nome da classe completa
 
@@ -103,7 +102,7 @@ class SiteSettingSeeder extends Seeder
         // Exemplo de configurações para o João Corretor (autônomo)
         $joaoCorretor = User::where('email', 'joao@corretor.com')->first();
         if ($joaoCorretor) {
-            SiteSetting::create([
+            TenantSetting::create([
                 'configurable_id' => $joaoCorretor->id,
                 'configurable_type' => User::class, // Use o nome da classe completa
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -21,6 +22,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'user_type', 
+        'creci_number', 
+        'company_id', 
+        'slug', 
+
     ];
 
     /**
@@ -44,5 +50,23 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Relação com a Imobiliária (se for um corretor vinculado)
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    // Relação polimórfica para as configurações do site do próprio usuário (se ele for um tenant)
+    public function tenantSettings(): MorphOne // Adicione esta relação
+    {
+        return $this->morphOne(TenantSetting::class, 'configurable');
+    }
+
+    // Relação com os imóveis cadastrados por este usuário
+    public function properties()
+    {
+        return $this->hasMany(Property::class);
     }
 }
