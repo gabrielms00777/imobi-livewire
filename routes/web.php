@@ -28,23 +28,19 @@ Route::middleware('auth')->name('admin.')->prefix('admin')->group(function () {
     // Route::get('/site-settings', \App\Livewire\Admin\SiteSettings::class)->name('site-settings');
 });
 
+Route::get('/demo', [HomeController::class, 'demo'])->name('home.demo');
 Route::prefix('{tenantSlug}')
     ->middleware(['web', 'set.tenant'])
     ->group(function () {
-        // Home do site do tenant
         Route::get('/', [HomeController::class, 'index'])->name('tenant.home');
-        // Exemplo de rota para Imóveis do tenant
         Route::get('/imoveis', [HomeController::class, 'properties'])->name('tenant.properties');
-        // Exemplo de rota para Contato do tenant
-        // Route::get('/contato', [ContactController::class, 'showContactForm'])->name('tenant.contact'); // Assumindo ContactController
-        // ... outras rotas do site do tenant
+        Route::get('/imoveis/{id}', [HomeController::class, 'property'])->name('tenant.property');
     });
 
 // Opcional: Rota para o site principal da plataforma (se você tiver um)
 Route::get('/', [HomeController::class, 'landing'])->name('platform.home');
 
 // Route::get('/', [HomeController::class, 'landing'])->name('home.landing');
-// Route::get('/site', [HomeController::class, 'index'])->name('home.index');
 // Route::get('/imoveis', [HomeController::class, 'properties'])->name('home.properties');
-// Route::get('/imovel/{id}', [HomeController::class, 'property'])->name('home.property');
+Route::get('/imovel/{id}', [HomeController::class, 'property'])->name('home.property');
 

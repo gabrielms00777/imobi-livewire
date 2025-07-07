@@ -75,7 +75,7 @@
         <div class="container mx-auto px-4">
             <div class="navbar">
                 <div class="flex-1">
-                    <a href="/" class="px-0">
+                    <a :href="route('tenant.home', ['tenantSlug' => $tenant->slug])" class="px-0">
                         <div class="flex items-center">
                             @if ($tenantSettings->logo && $tenantSettings->show_logo_and_name)
                                 <img src="{{ $tenantSettings->logo }}" alt="Logo {{ $tenantSettings->site_name }}"
@@ -106,42 +106,6 @@
                         </div>
                     </a>
                 </div>
-
-                {{-- Versão full backend --}}
-                {{-- <div class="flex-1">
-                    <a href="/" class="px-0">
-                        <div class="flex items-center">
-                            @php
-                                $showLogo =
-                                    $siteSettings['logo'] &&
-                                    ($siteSettings['header_display_type'] === 'logo_only' ||
-                                        $siteSettings['header_display_type'] === 'logo_and_name');
-                                $showName =
-                                    $siteSettings['site_name'] &&
-                                    ($siteSettings['header_display_type'] === 'name_only' ||
-                                        $siteSettings['header_display_type'] === 'logo_and_name');
-                                $names = explode(' ', $siteSettings['site_name']);
-                            @endphp
-
-                            @if ($showLogo)
-                                <img src="{{ $siteSettings['logo'] }}" alt="Logo {{ $siteSettings['site_name'] }}"
-                                    class="h-{{ $siteSettings['header_display_type'] === 'logo_and_name' ? '8' : '10' }} w-auto {{ $showName ? 'mr-2' : '' }} rounded-lg">
-                            @endif
-
-                            @if ($showName)
-                                <span class="text-xl font-bold text-primary">{{ $names[0] ?? '' }}
-                                    @if (isset($names[1]))
-                                        <span class="text-secondary">{{ $names[1] }}</span>
-                                    @endif
-                                </span>
-                            @endif
-
-                            @if (!$showLogo && !$showName)
-                                <span class="text-xl font-bold text-primary">Seu Site</span>
-                            @endif
-                        </div>
-                    </a>
-                </div> --}}
 
                 <div class="flex-none hidden lg:flex items-center gap-2">
                     <nav class="flex items-center">
@@ -184,7 +148,7 @@
                     <a href="https://wa.me/{{ $tenantSettings->social_whatsapp }}"
                         class="btn btn-primary btn-sm md:btn-md gap-2">
                         <i class="fab fa-whatsapp"></i>
-                        <span class="hidden sm:inline">{{ $tenantSettings->social_phone }}</span>
+                        <span class="hidden sm:inline">{{ $tenantSettings->contact_phone }}</span>
                     </a>
                 </div>
 
@@ -259,7 +223,7 @@
         <div class="container mx-auto px-4 mt-18 relative z-10"> {{-- Adicionado relative z-10 para garantir que o conteúdo fique acima da imagem --}}
             <div class="flex flex-col lg:flex-row items-center gap-12">
                 {{-- Conteúdo textual e avatares (condicional) --}}
-                @if ($tenantSettings->show_text_content)
+                @if ($tenantSettings->hero_show_text_content)
                     <div class="lg:w-1/2"> {{-- Adicionei text-primary-content para herdar a cor do texto --}}
                         <h1 class="text-4xl md:text-5xl font-bold mb-6">
                             {!! $tenantSettings->hero_title !!}
@@ -269,7 +233,7 @@
                         </p>
                         <div class="flex items-center gap-4">
                             <div class="flex -space-x-2">
-                                @foreach ($tenantSettings->hero_avatars as $avatarUrl)
+                                @foreach (json_decode($tenantSettings->hero_avatars) as $avatarUrl)
                                     <div class="avatar">
                                         <div class="w-12 h-12 rounded-full border-2 border-base-100">
                                             <img src="{{ $avatarUrl }}" />
@@ -366,7 +330,7 @@
                             <div class="flex justify-between items-center">
                                 <span class="text-xl font-bold text-primary">R$
                                     {{ number_format($property->price, 0, ',', '.') }}</span>
-                                <a :href="route('tenant.properties', ['tenantSlug' => $tenant - > slug])"
+                                <a :href="route('tenant.properties', ['tenantSlug' => $tenant->slug, 'propertySlug' => $property->slug])"
                                     class="btn btn-sm btn-secondary">Detalhes</a>
                             </div>
                         </div>
@@ -492,21 +456,21 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
                 @foreach (json_decode($tenantSettings->engagement_metrics) as $metric)
                     <div class="text-center">
-                        <div class="text-4xl font-bold mb-2">{{ $tenantSettings->engagement_value }}</div>
-                        <div class="opacity-80">{{ $tenantSettings->engagement_description }}</div>
+                        <div class="text-4xl font-bold mb-2">{{ $metric->value }}</div>
+                        <div class="opacity-80">{{ $metric->description }}</div>
                     </div>
                 @endforeach
             </div>
 
             <div class="mt-12 flex flex-col sm:flex-row justify-center gap-4">
-                <a href="{{ $tenantSettings->engagement_button_properties_link }}" class="btn btn-secondary btn-lg">
-                    <i class="{{ $tenantSettings->engagement_button_properties_icon }} mr-2"></i>
-                    {{ $tenantSettings->engagement_button_properties_text }}
+                <a href="{{ $tenantSettings->engagement_btn_properties_link }}" class="btn btn-secondary btn-lg">
+                    <i class="{{ $tenantSettings->engagement_btn_properties_icon }} mr-2"></i>
+                    {{ $tenantSettings->engagement_btn_properties_text }}
                 </a>
-                <a href="{{ $tenantSettings->engagement_button_contact_link }}"
+                <a href="{{ $tenantSettings->engagement_btn_contact_link }}"
                     class="btn btn-outline btn-lg btn-primary-content">
-                    <i class="{{ $tenantSettings->engagement_button_contact_icon }} mr-2"></i>
-                    {{ $tenantSettings->engagement_button_contact_text }}
+                    <i class="{{ $tenantSettings->engagement_btn_contact_icon }} mr-2"></i>
+                    {{ $tenantSettings->engagement_btn_contact_text }}
                 </a>
             </div>
         </div>

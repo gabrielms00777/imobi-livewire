@@ -14,8 +14,8 @@
     {{-- @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
     @else --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    {{-- <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> --}}
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
     <!-- Alpine JS -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -24,7 +24,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <style>
         :root {
@@ -473,8 +474,8 @@
                             <div class="flex justify-between items-center">
                                 <span class="text-xl font-bold text-primary">R$
                                     {{ number_format($property['price'], 0, ',', '.') }}</span>
-                                <a :href="route('home.property', $property['id'])"
-                                    class="btn btn-sm btn-secondary">Detalhes</a>
+                                {{-- <a :href="route('home.property', $property['id'])" --}}
+                                <a class="btn btn-sm btn-secondary">Detalhes</a>
                             </div>
                         </div>
                     </div>
@@ -482,7 +483,8 @@
             </div>
 
             <div class="text-center mt-8">
-                <a href="{{ route('home.properties', ['type' => 'destaque']) }}"
+                {{-- <a href="{{ route('home.properties', ['type' => 'destaque']) }}" --}}
+                <a 
                     class="btn btn-outline btn-primary">Ver mais imóveis</a>
             </div>
         </div>
@@ -576,8 +578,8 @@
                             <div class="flex justify-between items-center">
                                 <span class="font-bold text-primary">R$
                                     {{ number_format($property['price'], 0, ',', '.') }}</span>
-                                <a href="{{ $property['details_link'] ?? route('home.property', $property['id']) }}"
-                                    class="btn btn-xs btn-outline btn-primary">Detalhes</a>
+                                {{-- <a href="{{ $property['details_link'] ?? route('home.property', $property['id']) }}" --}}
+                                <a class="btn btn-xs btn-outline btn-primary">Detalhes</a>
                             </div>
                         </div>
                     </div>
