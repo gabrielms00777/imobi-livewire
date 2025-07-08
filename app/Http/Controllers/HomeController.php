@@ -316,9 +316,36 @@ class HomeController extends Controller
         ));
     }
 
-    public function properties()
+    public function properties(Request $request)
     {
-        return view('home.properties');
+        $tenant = app('tenant');
+        $tenantSettings = $tenant->tenantSettings;
+
+        if (!$tenantSettings) {
+            abort(404, 'Configurações do site não encontradas para este tenant.');
+        }
+
+        // Se for requisição AJAX (filtros)
+        if ($request->ajax()) {
+            $properties = $this->filterProperties($request);
+            return response()->json([
+                'properties' => $properties,
+                'html' => view('partials.property-list', compact('properties'))->render()
+            ]);
+        }
+
+        // Carrega todos os imóveis inicialmente
+        $properties = Property::where('company_id', $tenant->id)
+            ->where('status', 'available')
+            ->orderBy('is_featured', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->paginate(12);
+
+        return view('home.properties', compact(
+            'tenantSettings',
+            'tenant',
+            'properties'
+        ));
     }
 
     public function property($tenantSlug, $id)
@@ -370,5 +397,48 @@ class HomeController extends Controller
             'tenant',
             'propertyImages'
         ));
+    }
+
+    private function filterProperties(Request $request)
+    {
+        $query = Property::query()->where('company_id', app('tenant')->id);
+
+        // Filtros
+        if ($request->has('property_type')) {
+            $query->where('property_type', $request->property_type);
+        }
+
+        if ($request->has('transaction_type')) {
+            $query->where('transaction_type', $request->transaction_type);
+        }
+
+        if ($request->has('min_price')) {
+            $query->where('price', '>=', $request->min_price);
+        }
+
+        if ($request->has('max_price')) {
+            $query->where('price', '<=', $request->max_price);
+        }
+
+        if ($request->has('bedrooms')) {
+            $query->where('bedrooms', '>=', $request->bedrooms);
+        }
+
+        if ($request->has('bathrooms')) {
+            $query->where('bathrooms', '>=', $request->bathrooms);
+        }
+
+        if ($request->has('min_area')) {
+            $query->where('area', '>=', $request->min_area);
+        }
+
+        if ($request->has('order_by')) {
+            $order = explode(':', $request->order_by);
+            $query->orderBy($order[0], $order[1]);
+        } else {
+            $query->orderBy('is_featured', 'desc')->orderBy('created_at', 'desc');
+        }
+
+        return $query->paginate(12);
     }
 }

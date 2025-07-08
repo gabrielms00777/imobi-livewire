@@ -76,7 +76,7 @@
         <div class="container mx-auto px-4">
             <div class="navbar">
                 <div class="flex-1">
-                    <a :href="route('tenant.home', ['tenantSlug' => $tenant - > slug])" class="px-0">
+                    <a href="{{route('tenant.home', ['tenantSlug' => $tenant->slug])}}" class="px-0">
                         <div class="flex items-center">
                             @if ($tenantSettings->logo && $tenantSettings->show_logo_and_name)
                                 <img src="{{ $tenantSettings->logo }}" alt="Logo {{ $tenantSettings->site_name }}"
@@ -331,7 +331,7 @@
                             <div class="flex justify-between items-center">
                                 <span class="text-xl font-bold text-primary">R$
                                     {{ number_format($property->price, 0, ',', '.') }}</span>
-                                <a :href="route('tenant.property', ['tenantSlug' => $tenant->slug, 'id' => $property->id])"
+                                <a href="{{ route('tenant.property', ['tenantSlug' => $tenant->slug, 'id' => $property->id]) }}"
                                     class="btn btn-sm btn-secondary">Detalhes</a>
                             </div>
                         </div>

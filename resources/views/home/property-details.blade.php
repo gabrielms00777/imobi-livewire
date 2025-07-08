@@ -29,6 +29,9 @@
 
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
@@ -375,225 +378,228 @@
                 </button>
             </div>
         </div> --}}
-        <div x-data="{
-            currentImageIndex: 0,
-            images: @json($propertyImages),
-            next() {
-                this.currentImageIndex = (this.currentImageIndex === this.images.length - 1) ? 0 : this.currentImageIndex + 1;
-            },
-            prev() {
-                this.currentImageIndex = (this.currentImageIndex === 0) ? this.images.length - 1 : this.currentImageIndex - 1;
-            },
-            get transformValue() {
-                    // Calcula o deslocamento para centralizar a imagem atual, considerando o espaçamento
-                    // `gap-4` = 16px. A imagem principal é `w-[calc(100%-8rem)]` em desktop.
-                    // A largura total das imagens visíveis é (w_img + gap) * num_imgs_visiveis_laterais * 2 + w_img_central
-                    // Isso requer um cálculo mais exato do posicionamento para alinhar no centro.
-                    // Por simplicidade, vamos calcular o deslocamento como se cada slide ocupasse 100% e depois ajustar o espaçamento.
-                    // Isso pode precisar de calibração fina com a largura das imagens visíveis.
-        
-                    // Para um carrossel onde 3 imagens são parcialmente visíveis (esquerda, centro, direita)
-                    // e queremos centralizar a do meio.
-                    // Cada item no carrossel precisa ter a mesma largura para o calculo de translateX ser simples.
-        
-                    // Para o layout da imagem, onde as laterais são cortadas, vamos fazer
-                    // com que cada slide ocupe um percentual da tela e a transform faça o resto.
-                    // Em mobile (col-1), a imagem ocupa 100%. Em lg (col-3, gap-4), a imagem central é maior.
-                    // Para simplificar, vou focar no `transform: translateX` para centralizar a imagem *principal*
-                    // e as outras serão visíveis por causa do padding ou margem negativa.
-        
-                    // Se for um slide por vez (como a primeira opção, mas com padding), a lógica é simples.
-                    {{-- // Para "slides expostos", precisamos de um cálculo que leve em conta a largura total do container e a largura de cada slide. 
-            // Ex: Se cada slide tem 80% da largura do container, e queremos 10% de
-            padding em cada lado. // A imagem atual estaria em `currentImageIndex * (80% + gap)`. // Vamos usar uma
-            abordagem mais simples: o translateX vai mover o carousel baseado no índice, // e o "padding" visual virá do
-            `mx-auto` e `overflow-hidden` com padding no container pai. // Adaptei o translateX para a visualização da
-            imagem. // Supondo que você queira a imagem central com largura total, e as vizinhas "aparecendo" pelos
-            lados. // Isso é mais complexo com Tailwind puro para larguras dinâmicas. // Para o visual da sua imagem, o
-            carrossel não é 100% de largura por slide. // Cada item no carrossel tem uma largura definida (ex: 80% da
-            viewport, com margens laterais). // O `transform` precisa mover a `ul` inteira para que o item
-            `currentImageIndex` fique no centro. if (this.images.length===0) return '0' ; // Assumindo que a imagem
-            central tem a classe `w-full` dentro de um contêiner com `px-16` para mostrar os vizinhos. // ou que cada
-            item tem uma largura calculada (ex: `w-[80vw]` para mobile, `w-[60vw]` para desktop) // e o container
-            principal tem overflow hidden e um padding para expor os lados. // Vamos simular o efeito da imagem: um
-            flexbox com 3 itens visíveis, o do meio centralizado. // O transform deve levar em conta a largura do item e
-            o gap. // Por enquanto, vou manter o translateX simples (para 100% de largura por slide) // e adicionar
-            classes que simulam a visibilidade lateral via padding/margin.  --}}
-            return `-${this.currentImageIndex * 100}%`; }
-            }" class="w-full relative shadow-lg mb-8 rounded-xl overflow-hidden bg-base-200">
+        <div class="w-full relative shadow-lg mb-8 rounded-xl overflow-hidden bg-base-200">
+            <div x-data="{
+                swiper: null,
+                initSwiper() {
+                    this.swiper = new Swiper(this.$refs.swiperContainer, {
+                        slidesPerView: 'auto', // Mostra slides parciais
+                        spaceBetween: 16, // Espaço entre os slides (16px = gap-4)
+                        centeredSlides: true, // Centraliza o slide ativo
+                        loop: true, // Loop infinito
+                        navigation: {
+                            nextEl: this.$refs.swiperNext,
+                            prevEl: this.$refs.swiperPrev,
+                        },
+                        pagination: {
+                            el: this.$refs.swiperPagination,
+                            clickable: true,
+                        },
+                        breakpoints: {
+                            // Configurações para mobile
+                            640: {
+                                slidesPerView: 1, // 1 slide por vez em telas pequenas
+                                spaceBetween: 0,
+                                centeredSlides: false,
+                            },
+                            // Configurações para tablet e desktop
+                            1024: {
+                                slidesPerView: 'auto', // 'auto' para o efeito de slides parciais em telas maiores
+                                spaceBetween: 16,
+                                centeredSlides: true,
+                            }
+                        }
+                    });
+                }
+            }" x-init="initSwiper()">
 
-            {{-- Área de Visualização Principal do Carrossel --}}
-            <div class="relative w-full h-80 sm:h-96 md:h-[450px] lg:h-[550px] flex overflow-hidden">
-                {{-- Container das Imagens (movido pelo Alpine.js) --}}
-                <div class="flex h-full transition-transform duration-500 ease-in-out"
-                    :style="'transform: translateX(' + transformValue + ')'">
-                    @foreach ($propertyImages as $imageUrl)
-                        {{-- Cada item do carrossel. As classes `w-full flex-shrink-0` garantem que cada imagem ocupe a largura total do seu pai flexível --}}
-                        {{-- Para o efeito da sua imagem, onde você vê as laterais, a estrutura seria mais como: --}}
-                        {{-- um container com `overflow-hidden` e `padding-x` (ou `margin-x` negativa)
-                --}}
-                        <div class="flex-shrink-0 w-full h-full"> {{-- Este item irá ocupar 100% do espaço visível, mas o contêiner pai fará o "corte" --}}
-                            <img src="{{ $imageUrl }}" class="w-full h-full object-cover"
-                                alt="Imagem do Imóvel">
-                        </div>
-                    @endforeach
-                </div>
+                <div class="swiper-container w-full h-[300px] sm:h-[350px] md:h-[400px] lg:h-[450px] xl:h-[500px] pb-8"
+                    x-ref="swiperContainer">
+                    <div class="swiper-wrapper">
+                        @foreach ($propertyImages as $imageUrl)
+                            <div class="swiper-slide rounded-lg overflow-hidden flex items-center justify-center">
+                                <img src="{{ $imageUrl }}" class="w-full h-full object-cover"
+                                    alt="Imagem do Imóvel">
+                            </div>
+                        @endforeach
+                    </div>
 
-                {{-- Controles de Navegação (setas sobrepostas) --}}
-                <div
-                    class="absolute left-0 right-0 top-1/2 flex justify-between transform -translate-y-1/2 px-4 md:px-8 z-10">
-                    <button @click="prev()"
-                        class="btn btn-circle bg-white/50 hover:bg-white text-base-content border-none shadow-md">❮</button>
-                    <button @click="next()"
-                        class="btn btn-circle bg-white/50 hover:bg-white text-base-content border-none shadow-md">❯</button>
+                    <div x-ref="swiperPrev"
+                        class="swiper-button-prev btn btn-circle bg-white/50 hover:bg-white text-base-content border-none shadow-md">
+                        ❮</div>
+                    <div x-ref="swiperNext"
+                        class="swiper-button-next btn btn-circle bg-white/50 hover:bg-white text-base-content border-none shadow-md">
+                        ❯</div>
+
+                    <div x-ref="swiperPagination" class="swiper-pagination bottom-0"></div>
                 </div>
 
                 @if ($property->is_featured)
                     <span class="badge badge-primary absolute top-4 right-4 text-lg p-3 z-20">Destaque</span>
                 @endif
             </div>
-
-            {{-- Botões de navegação (dots) na parte inferior, se desejar --}}
-            <div class="flex justify-center w-full py-2 gap-2 bg-base-200 rounded-b-xl relative z-10">
-                @foreach ($propertyImages as $index => $imageUrl)
-                    <button @click="currentImageIndex = {{ $index }}"
-                        class="w-3 h-3 rounded-full transition-colors duration-200"
-                        :class="currentImageIndex === {{ $index }} ? 'bg-primary' :
-                            'bg-base-content/40 hover:bg-base-content/70'">
-                    </button>
-                @endforeach
-            </div>
-
         </div>
 
-        {{-- **IMPORTANTE:** Para obter o efeito da sua imagem, onde as laterais das fotos vizinhas são visíveis,
-     você precisará de um pouco mais de CSS customizado ou de uma biblioteca de carrossel JS mais robusta
-     (como Swiper.js ou Splide.js) configurada para 'slidesPerView: auto' ou 'slidesOffsetBefore/After'.
+        <style>
+            /* Estilos para alinhar os botões de navegação do Swiper */
+            .swiper-button-prev,
+            .swiper-button-next {
+                width: 48px;
+                /* daisyui btn-circle default */
+                height: 48px;
+                /* daisyui btn-circle default */
+                color: var(--fallback-bc, oklch(var(--bc)/1));
+                /* Cor do texto para DaisyUI neutral-content */
+                transform: translateY(-50%);
+            }
 
-     O código acima usa `w-full` para cada slide. Para o efeito de "exposed slides", a div externa `<div class="relative w-full h-80 ... flex overflow-hidden">`
-     precisaria de `padding-x` e os `carousel-item` teriam uma largura menor que 100%
-     (ex: `w-[80%]` ou `w-[calc(100%-gap-size)]` para um layout de 3 slides visíveis).
-     O `transformValue` no Alpine.js precisaria ser mais complexo para centralizar a imagem ativa.
+            .swiper-button-prev::after,
+            .swiper-button-next::after {
+                font-size: 1.25rem;
+                /* Ajusta o tamanho do ícone */
+                content: '';
+                /* Remove o conteúdo padrão do Swiper */
+            }
 
-     **Tentativa de Simular o Layout da Imagem com Tailwind/Alpine puro (Mais avançado):**
-     Isso exige um ajuste fino das larguras e margens negativas, e pode não ser 100% perfeito sem um JS mais complexo.
-     Vou dar um exemplo conceitual de como o CSS/JS para o `transformValue` mudaria, mas o HTML base é o mesmo.
+            /* Ajuste para o position dos botões, se necessário.
+       O Swiper coloca absolute, DaisyUI btn-circle já ajuda. */
+            .swiper-button-prev {
+                left: 1rem;
+                /* DaisyUI padding */
+            }
 
-     **Conceito para `transformValue` em Carrossel "Exposto":**
-     Em vez de `-${this.currentImageIndex * 100}%`, seria algo como:
-     `currentSlideOffset = (this.currentImageIndex * (larguraDoSlide + espacamentoEntreSlides));`
-     `centralizationOffset = (larguraDoContainer / 2) - (larguraDoSlide / 2);`
-     `transform = -(currentSlideOffset - centralizationOffset);`
+            .swiper-button-next {
+                right: 1rem;
+                /* DaisyUI padding */
+            }
 
-     Isso seria um cálculo JavaScript dentro do Alpine.js para o `transformValue`.
-     Para o Tailwind, as classes seriam:
-     `<div class="flex-shrink-0 w-[calc(80%-1rem)] mx-2 h-full">` (exemplo para cada slide, com margens)
-     E o container principal teria `overflow-hidden`.
---}}
+            /* Estilo para a paginação (dots) do Swiper */
+            .swiper-pagination-bullet {
+                background: var(--fallback-nc, oklch(var(--nc)/1));
+                /* Cor dos dots inativos */
+                opacity: 0.4;
+            }
 
-        {{-- Para o seu caso, a Opção 1 (Carrossel Principal com Miniaturas Abaixo) era a mais fácil de adaptar para
-     mostrar todas as imagens de forma interativa sem uma área de foto *muito* grande no topo.
-     Mas se a imagem que você mandou é o objetivo, o DaisyUI Carousel padrão não faz isso.
-     Precisamos de uma biblioteca de terceiros (Swiper, Splide) ou de um Alpine/Tailwind mais complexo.
+            .swiper-pagination-bullet-active {
+                background: var(--fallback-p, oklch(var(--p)/1));
+                /* Cor do dot ativo (primary) */
+                opacity: 1;
+            }
 
-     **Dado que você quer o estilo da imagem, o código acima é uma tentativa mais próxima.**
-     Ele usa `flex` e `overflow-hidden` com `transform` no Alpine.js.
-     A **altura** do carrossel foi reduzida para 320px/384px/450px/550px em diferentes viewports para deixá-lo mais compacto.
-     As setas de navegação estão sobrepostas na imagem, como na sua referência.
-     Os "dots" de navegação foram mantidos na parte inferior para clareza.
---}}
+            /* Customização para o espaçamento das slides "auto" para o visual da sua imagem */
+            .swiper-slide {
+                width: 80% !important;
+                /* Ajuste a largura para o slide principal */
+            }
+
+            /* Em telas pequenas, queremos 1 slide por vez */
+            @media (max-width: 639px) {
+                .swiper-slide {
+                    width: 100% !important;
+                }
+            }
+
+            /* Esconde as setas de navegação em telas pequenas, se desejar */
+            @media (max-width: 767px) {
+
+                .swiper-button-prev,
+                .swiper-button-next {
+                    display: none;
+                }
+            }
+        </style>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Informações Principais -->
             <div class="lg:col-span-2">
-                <!-- Título e Preço -->
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                    <h1 class="text-3xl font-bold">Casa Moderna no Centro</h1>
-                    <div class="text-2xl font-bold text-primary mt-2 md:mt-0">R$ 850.000</div>
+                    <h1 class="text-3xl font-bold text-base-content">{{ $property->title ?? 'Título do Imóvel' }}</h1>
+                    <div class="text-2xl font-bold text-primary mt-2 md:mt-0">
+                        {{ 'R$ ' . number_format($property->price ?? 0, 2, ',', '.') }}
+                    </div>
                 </div>
 
-                <!-- Localização -->
-                <div class="flex items-center text-lg mb-6">
-                    <i class="fas fa-map-marker-alt text-gray-500 mr-2"></i>
-                    <span>Rua Exemplo, 123 - Centro, São Paulo/SP</span>
+                <div class="flex items-center text-lg mb-6 text-base-content">
+                    <i class="fas fa-map-marker-alt text-base-content/60 mr-2"></i>
+                    <span>
+                        {{ $property->address ?? 'Rua Exemplo, 123' }} -
+                        {{ $property->neighborhood ?? 'Bairro' }},
+                        {{ $property->city ?? 'Cidade' }}/{{ $property->state ?? 'UF' }}
+                    </span>
                 </div>
 
-                <!-- Características -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <div class="bg-base-200 p-4 rounded-lg text-center">
+                    <div class="bg-base-200 p-4 rounded-lg text-center text-base-content">
                         <i class="fas fa-bed text-2xl mb-2 text-primary"></i>
-                        <div>3 Quartos</div>
+                        <div>{{ $property->bedrooms ?? '?' }} Quartos</div>
                     </div>
-                    <div class="bg-base-200 p-4 rounded-lg text-center">
+                    <div class="bg-base-200 p-4 rounded-lg text-center text-base-content">
                         <i class="fas fa-bath text-2xl mb-2 text-primary"></i>
-                        <div>2 Banheiros</div>
+                        <div>{{ $property->bathrooms ?? '?' }} Banheiros</div>
                     </div>
-                    <div class="bg-base-200 p-4 rounded-lg text-center">
+                    <div class="bg-base-200 p-4 rounded-lg text-center text-base-content">
                         <i class="fas fa-ruler-combined text-2xl mb-2 text-primary"></i>
-                        <div>180 m²</div>
+                        <div>{{ $property->area ?? '?' }} m²</div>
                     </div>
-                    <div class="bg-base-200 p-4 rounded-lg text-center">
+                    <div class="bg-base-200 p-4 rounded-lg text-center text-base-content">
                         <i class="fas fa-car text-2xl mb-2 text-primary"></i>
-                        <div>2 Vagas</div>
+                        <div>{{ $property->parking_spaces ?? '?' }} Vagas</div>
                     </div>
                 </div>
 
-                <!-- Descrição -->
                 <div class="mb-8">
-                    <h2 class="text-xl font-bold mb-4">Descrição do Imóvel</h2>
-                    <p class="mb-4">Esta casa moderna no coração da cidade oferece conforto e sofisticação. Com
-                        acabamentos de alta qualidade e uma localização privilegiada, é a escolha perfeita para quem
-                        busca praticidade e estilo de vida urbano.</p>
-                    <p>O imóvel possui ampla sala de estar integrada à cozinha gourmet, três suítes (sendo uma master
-                        com closet), área de serviço completa, garagem coberta para dois carros e um terraço com vista
-                        deslumbrante para a cidade.</p>
+                    <h2 class="text-xl font-bold mb-4 text-base-content">Descrição do Imóvel</h2>
+                    <p class="mb-4 text-base-content/80">
+                        {{ $property->description ?? 'Esta é a descrição detalhada do imóvel. Nenhuma descrição foi fornecida para este imóvel.' }}
+                    </p>
                 </div>
 
-                <!-- Destaques -->
-                <div class="mb-8">
-                    <h2 class="text-xl font-bold mb-4">Destaques</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-primary mr-2"></i>
-                            <span>Cozinha com armários planejados</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-primary mr-2"></i>
-                            <span>Pisos em porcelanato</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-primary mr-2"></i>
-                            <span>Sistema de segurança</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-primary mr-2"></i>
-                            <span>Ar condicionado split</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-primary mr-2"></i>
-                            <span>Aquecimento solar</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-primary mr-2"></i>
-                            <span>Varanda gourmet</span>
+                @php
+                    // Decodifica os destaques se forem uma string JSON, caso contrário usa um array vazio
+                    $highlights = is_string($property->highlights ?? null)
+                        ? json_decode($property->highlights, true)
+                        : $property->highlights ?? [];
+                @endphp
+
+                @if (!empty($highlights))
+                    <div class="mb-8">
+                        <h2 class="text-xl font-bold mb-4 text-base-content">Destaques</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            @foreach ($highlights as $highlight)
+                                <div class="flex items-center text-base-content/80">
+                                    <i class="fas fa-check-circle text-primary mr-2"></i>
+                                    <span>{{ $highlight }}</span>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
-                </div>
+                @endif
 
-                <!-- Mapa -->
                 <div class="mb-8">
-                    <h2 class="text-xl font-bold mb-4">Localização</h2>
+                    <h2 class="text-xl font-bold mb-4 text-base-content">Localização</h2>
                     <div class="bg-base-200 rounded-xl overflow-hidden h-64">
-                        <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.197353585618!2d-46.65867598447599!3d-23.56134918468293!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x94ce59c8da0aa315%3A0xd59f9431f2c9776a!2sAv.%20Paulista%2C%20S%C3%A3o%20Paulo%20-%20SP!5e0!3m2!1spt-BR!2sbr!4v1623865703949!5m2!1spt-BR!2sbr"
-                            width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
-                            class="filter grayscale(50%) contrast(1.2)"></iframe>
+                        @php
+                            // Constrói o endereço completo para o mapa
+                            $fullAddress = urlencode(
+                                ($property->address ?? '') .
+                                    ', ' .
+                                    ($property->neighborhood ?? '') .
+                                    ', ' .
+                                    ($property->city ?? '') .
+                                    ' - ' .
+                                    ($property->state ?? ''),
+                            );
+                            // URL do Google Maps Embed. Não requer chave API para embeds básicos
+                            $mapSrc = "https://maps.google.com/maps?q={$fullAddress}&t=&z=15&ie=UTF8&iwloc=&output=embed";
+                        @endphp
+                        <iframe src="{{ $mapSrc }}" width="100%" height="100%" style="border:0;"
+                            allowfullscreen="" loading="lazy" class="filter grayscale(50%) contrast(1.2)"></iframe>
                     </div>
                 </div>
             </div>
 
             <!-- Sidebar - Contato e Informações -->
-            <div class="lg:col-span-1">
+            {{-- <div class="lg:col-span-1">
                 <div class="sticky top-24">
                     <!-- Formulário de Contato -->
                     <div class="card bg-base-100 shadow-xl mb-6">
@@ -678,111 +684,205 @@
                         </div>
                     </div>
                 </div>
+            </div> --}}
+            <div class="lg:col-span-1">
+                <div class="sticky top-24">
+                    <div class="card bg-base-100 shadow-xl mb-6 text-base-content">
+                        <div class="card-body">
+                            <h2 class="card-title mb-4">Interessado neste imóvel?</h2>
+
+                            <template x-if="!showContactForm">
+                                <div>
+                                    <p class="mb-4">Entre em contato com nosso corretor especializado para agendar
+                                        uma visita ou obter mais informações.</p>
+                                    <button @click="showContactForm = true" class="btn btn-primary w-full mb-4">
+                                        <i class="fas fa-envelope mr-2"></i> Enviar Mensagem
+                                    </button>
+                                    {{-- O número de telefone do corretor deve vir do backend --}}
+                                    <a href="tel:{{ $broker->phone ?? '+5511999999999' }}"
+                                        class="btn btn-outline btn-primary w-full">
+                                        <i class="fas fa-phone-alt mr-2"></i> Ligar Agora
+                                    </a>
+                                </div>
+                            </template>
+
+                            <template x-if="showContactForm">
+                                <form class="space-y-4">
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text text-base-content/80">Seu Nome</span>
+                                        </label>
+                                        <input type="text" placeholder="Nome completo"
+                                            class="input input-bordered w-full">
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text text-base-content/80">Seu Telefone</span>
+                                        </label>
+                                        <input type="tel" placeholder="(00) 00000-0000"
+                                            class="input input-bordered w-full">
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text text-base-content/80">Seu E-mail</span>
+                                        </label>
+                                        <input type="email" placeholder="seu@email.com"
+                                            class="input input-bordered w-full">
+                                    </div>
+                                    <div class="form-control">
+                                        <label class="label">
+                                            <span class="label-text text-base-content/80">Mensagem</span>
+                                        </label>
+                                        <textarea class="textarea textarea-bordered h-24 w-full"
+                                            placeholder="Gostaria de mais informações sobre este imóvel..."></textarea>
+                                    </div>
+                                    <div class="form-control mt-6">
+                                        <button type="submit" class="btn btn-primary w-full">Enviar Mensagem</button>
+                                        {{-- Changed to type="submit" --}}
+                                        <button type="button" @click="showContactForm = false"
+                                            class="btn btn-ghost w-full mt-2">Cancelar</button> {{-- Add a cancel button --}}
+                                    </div>
+                                </form>
+                            </template>
+                        </div>
+                    </div>
+
+                    @php
+                        // Simulação de um objeto $broker se ele não estiver sendo passado diretamente
+                        // No seu controlador real, você buscará o corretor associado ao imóvel
+                        $broker =
+                            $broker ??
+                            (object) [
+                                'name' => 'Carlos Silva',
+                                'creci' => '123456-SP',
+                                'phone' => '+5511999999999',
+                                'email' => 'carlos@imobiliaria.com',
+                                'avatar_url' => 'https://randomuser.me/api/portraits/men/32.jpg', // Imagem padrão
+                            ];
+                    @endphp
+                    <div class="card bg-base-100 shadow-xl text-base-content">
+                        <div class="card-body">
+                            <h2 class="card-title mb-4">Corretor Responsável</h2>
+                            <div class="flex items-center mb-4">
+                                <div class="avatar mr-4">
+                                    <div class="w-16 rounded-full">
+                                        <img src="{{ $broker->avatar_url ?? 'https://via.placeholder.com/150' }}"
+                                            alt="Corretor">
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold">{{ $broker->name ?? 'Corretor Desconhecido' }}</h3>
+                                    <p class="text-sm">CRECI: {{ $broker->creci ?? 'Não Informado' }}</p>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <i class="fas fa-phone-alt text-primary mr-2"></i>
+                                    <span>{{ $broker->phone ?? '(00) 00000-0000' }}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-envelope text-primary mr-2"></i>
+                                    <span>{{ $broker->email ?? 'contato@imobiliaria.com' }}</span>
+                                </div>
+                                {{-- Adicionar botão WhatsApp (opcional) --}}
+                                @if ($broker->phone)
+                                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $broker->phone) }}?text=Ol%C3%A1%2C%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20im%C3%B3vel%3A%20{{ urlencode($property->title ?? 'Im%C3%B3vel') }}%20-%20{{ urlencode(Request::url()) }}"
+                                        target="_blank" class="btn btn-success btn-sm w-full mt-4">
+                                        <i class="fab fa-whatsapp mr-2"></i> Mensagem via WhatsApp
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Imóveis Similares -->
         <section class="mt-16">
-            <h2 class="text-2xl font-bold mb-8">Imóveis Similares</h2>
+            <h2 class="text-2xl font-bold mb-8 text-base-content">Imóveis Similares</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Card Imóvel Similar 1 -->
-                <div class="property-card card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300">
-                    <figure>
-                        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
-                            alt="Apartamento similar" class="h-48 w-full object-cover">
-                    </figure>
-                    <div class="card-body p-4">
-                        <h3 class="card-title">Apartamento na Zona Sul</h3>
-                        <div class="flex items-center text-sm mb-2">
-                            <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
-                            <span>Zona Sul, São Paulo</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm mb-3">
-                            <div>
-                                <i class="fas fa-bed mr-1"></i>
-                                <span>3 Quartos</span>
-                            </div>
-                            <div>
-                                <i class="fas fa-bath mr-1"></i>
-                                <span>2 Banheiros</span>
-                            </div>
-                            <div>
-                                <i class="fas fa-ruler-combined mr-1"></i>
-                                <span>90m²</span>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="font-bold text-primary">R$ 750.000</span>
-                            <a href="#" class="btn btn-xs btn-outline btn-primary">Ver Detalhes</a>
-                        </div>
-                    </div>
-                </div>
+                @php
+                    // Simulação de dados para imóveis similares, caso $similarProperties não esteja definida
+                    // No seu controlador, você buscará os imóveis similares e os passará para a view.
+                    $similarProperties = $similarProperties ?? [
+                        (object) [
+                            'id' => 101,
+                            'image_url' =>
+                                'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+                            'title' => 'Apartamento na Zona Sul',
+                            'location' => 'Zona Sul, São Paulo',
+                            'bedrooms' => 3,
+                            'bathrooms' => 2,
+                            'area' => 90,
+                            'price' => 750000,
+                        ],
+                        (object) [
+                            'id' => 102,
+                            'image_url' =>
+                                'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+                            'title' => 'Casa com Jardim Amplo',
+                            'location' => 'Vila Mariana, São Paulo',
+                            'bedrooms' => 4,
+                            'bathrooms' => 3,
+                            'area' => 150,
+                            'price' => 1200000,
+                        ],
+                        (object) [
+                            'id' => 103,
+                            'image_url' =>
+                                'https://images.unsplash.com/photo-1600566752225-53769df8b5e5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+                            'title' => 'Cobertura Moderna',
+                            'location' => 'Itaim Bibi, São Paulo',
+                            'bedrooms' => 3,
+                            'bathrooms' => 2,
+                            'area' => 110,
+                            'price' => 950000,
+                        ],
+                    ];
+                @endphp
 
-                <!-- Card Imóvel Similar 2 -->
-                <div class="property-card card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300">
-                    <figure>
-                        <img src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
-                            alt="Casa similar" class="h-48 w-full object-cover">
-                    </figure>
-                    <div class="card-body p-4">
-                        <h3 class="card-title">Casa com Jardim</h3>
-                        <div class="flex items-center text-sm mb-2">
-                            <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
-                            <span>Vila Mariana, São Paulo</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm mb-3">
-                            <div>
-                                <i class="fas fa-bed mr-1"></i>
-                                <span>4 Quartos</span>
+                @forelse($similarProperties as $similarProperty)
+                    <div
+                        class="property-card card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300 text-base-content">
+                        <figure>
+                            <img src="{{ $similarProperty->image_url ?? 'https://via.placeholder.com/500x300?text=Sem+Imagem' }}"
+                                alt="{{ $similarProperty->title ?? 'Imóvel' }}" class="h-48 w-full object-cover">
+                        </figure>
+                        <div class="card-body p-4">
+                            <h3 class="card-title text-base-content">{{ $similarProperty->title ?? 'Imóvel Similar' }}
+                            </h3>
+                            <div class="flex items-center text-sm mb-2 text-base-content/80">
+                                <i class="fas fa-map-marker-alt mr-2 text-base-content/60"></i>
+                                <span>{{ $similarProperty->location ?? 'Localização Desconhecida' }}</span>
                             </div>
-                            <div>
-                                <i class="fas fa-bath mr-1"></i>
-                                <span>3 Banheiros</span>
+                            <div class="flex justify-between items-center text-sm mb-3 text-base-content/80">
+                                <div>
+                                    <i class="fas fa-bed mr-1"></i>
+                                    <span>{{ $similarProperty->bedrooms ?? '?' }} Quartos</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-bath mr-1"></i>
+                                    <span>{{ $similarProperty->bathrooms ?? '?' }} Banheiros</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-ruler-combined mr-1"></i>
+                                    <span>{{ $similarProperty->area ?? '?' }}m²</span>
+                                </div>
                             </div>
-                            <div>
-                                <i class="fas fa-ruler-combined mr-1"></i>
-                                <span>150m²</span>
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-primary">R$
+                                    {{ number_format($similarProperty->price ?? 0, 2, ',', '.') }}</span>
+                                {{-- Link para a página de detalhes do imóvel similar --}}
+                                <a href="{{ route('tenant.property.show', ['tenantSlug' => $tenant->slug, 'propertyId' => $similarProperty->id]) }}"
+                                    class="btn btn-xs btn-outline btn-primary">Ver Detalhes</a>
                             </div>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="font-bold text-primary">R$ 1.200.000</span>
-                            <a href="#" class="btn btn-xs btn-outline btn-primary">Ver Detalhes</a>
                         </div>
                     </div>
-                </div>
-
-                <!-- Card Imóvel Similar 3 -->
-                <div class="property-card card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300">
-                    <figure>
-                        <img src="https://images.unsplash.com/photo-1600566752225-53769df8b5e5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
-                            alt="Cobertura similar" class="h-48 w-full object-cover">
-                    </figure>
-                    <div class="card-body p-4">
-                        <h3 class="card-title">Cobertura Moderna</h3>
-                        <div class="flex items-center text-sm mb-2">
-                            <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
-                            <span>Itaim Bibi, São Paulo</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm mb-3">
-                            <div>
-                                <i class="fas fa-bed mr-1"></i>
-                                <span>3 Quartos</span>
-                            </div>
-                            <div>
-                                <i class="fas fa-bath mr-1"></i>
-                                <span>2 Banheiros</span>
-                            </div>
-                            <div>
-                                <i class="fas fa-ruler-combined mr-1"></i>
-                                <span>110m²</span>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="font-bold text-primary">R$ 950.000</span>
-                            <a href="#" class="btn btn-xs btn-outline btn-primary">Ver Detalhes</a>
-                        </div>
-                    </div>
-                </div>
+                @empty
+                    <p class="col-span-full text-center text-base-content/70">Nenhum imóvel similar encontrado no
+                        momento.</p>
+                @endforelse
             </div>
         </section>
     </main>

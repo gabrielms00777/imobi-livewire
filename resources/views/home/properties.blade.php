@@ -1,40 +1,32 @@
 <!DOCTYPE html>
-<html lang="pt-BR" x-data="{ darkMode: false, filtersOpen: window.innerWidth >= 1024, minPrice: 0, maxPrice: 2000000, currentMinPrice: 200000, currentMaxPrice: 1000000, propertyType: 'all', bedrooms: 'all', bathrooms: 'all', parkingSpaces: 'all', minArea: null, maxArea: null, sortOrder: 'relevance' }" :class="{ 'dark': darkMode }">
+<html lang="pt-BR" x-data="{ darkMode: false, filtersOpen: true, priceRange: [200000, 1000000] }" :class="{ 'dark': darkMode }">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imóveis | Sua Nova Casa Está Aqui</title>
+    <title>Casa Moderna no Centro - Imobiliária</title>
+    <!-- Tailwind CSS + DaisyUI -->
+    {{-- @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+    @else --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@latest/dist/full.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
+    <!-- Alpine JS -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
 
     <style>
         :root {
-            --primary: #3b82f6;
-            --secondary: #10b981;
-            --accent: #f59e0b;
-            --neutral: #1f2937;
-            --base-100: #ffffff;
-            --base-200: #f9fafb;
-            --base-300: #e5e7eb;
-        }
-
-        .dark {
-            --primary: #60a5fa;
-            --secondary: #34d399;
-            --accent: #fbbf24;
-            --neutral: #d1d5db;
-            --base-100: #1f2937;
-            --base-200: #111827;
-            --base-300: #2b3544;
+            --color-primary: {{ $tenantSettings->primary_color ?? '#3b82f6' }};
+            --color-secondary: {{ $tenantSettings->secondary_color ?? '#f63b3b' }};
+            --color-neutral: {{ $tenantSettings->text_color }};
         }
 
         body {
@@ -56,569 +48,472 @@
         }
 
         .animate-fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
-        }
-
-        .property-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeIn 0.9s ease-out forwards;
         }
 
         .property-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Esconder a barra de rolagem em ranges para melhor UX, se necessário */
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--primary);
-            cursor: pointer;
-            box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.3); /* Adicionar um brilho sutil */
-        }
-
-        input[type="range"]::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--primary);
-            cursor: pointer;
-            box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.3);
+        .property-card {
+            transition: all 0.3s ease;
         }
     </style>
 </head>
 
-<body class="bg-base-200 text-neutral min-h-screen flex flex-col">
-    <header class="sticky top-0 z-50 shadow-lg bg-base-100">
-        <div class="navbar container mx-auto px-4 py-3">
-            <div class="flex-1">
-                <a href="#" class="btn btn-ghost normal-case text-2xl font-extrabold text-primary"
-                    aria-label="Voltar para a página inicial da Imobiliária">Imobiliária</a>
-            </div>
-            <div class="flex-none">
-                <ul class="menu menu-horizontal p-0 hidden md:flex font-medium">
-                    <li><a href="#destaques" class="hover:text-primary transition-colors duration-200">Destaques</a>
-                    </li>
-                    <li><a href="#sobre" class="hover:text-primary transition-colors duration-200">Sobre Nós</a></li>
-                    <li><a href="#recentes" class="hover:text-primary transition-colors duration-200">Recentes</a>
-                    </li>
-                    <li><a href="#contato" class="hover:text-primary transition-colors duration-200">Contato</a></li>
-                </ul>
+<body class="bg-base-100 text-neutral">
+    <header x-data="{ isScrolled: false }" @scroll.window="isScrolled = window.scrollY > 50"
+        class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+        :class="isScrolled ? 'bg-white shadow-md dark:bg-neutral' : 'bg-transparent'">
 
-                <label class="swap swap-rotate ml-4">
-                    <input type="checkbox" @change="darkMode = $event.target.checked" :checked="darkMode"
-                        class="theme-controller" />
-                    <i class="swap-off fas fa-sun text-2xl text-accent"></i>
-                    <i class="swap-on fas fa-moon text-2xl text-primary"></i>
-                </label>
+        <div class="container mx-auto px-4">
+            <div class="navbar">
+                <div class="flex-1">
+                    <a :href="route('tenant.home', ['tenantSlug' => $tenant - > slug])" class="px-0">
+                        <div class="flex items-center">
+                            <a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug]) }}">
+                                @if ($tenantSettings->logo && $tenantSettings->show_logo_and_name)
+                                    <img src="{{ $tenantSettings->logo }}" alt="Logo {{ $tenantSettings->site_name }}"
+                                        class="h-8 w-auto mr-2 rounded-lg">
+                                    @php
+                                        $names = explode(' ', $tenantSettings->site_name);
+                                    @endphp
+                                    <span class="text-xl font-bold text-primary">{{ $names[0] ?? '' }}
+                                        @if (isset($names[1]))
+                                            <span class="text-secondary">{{ $names[1] }}</span>
+                                        @endif
+                                    </span>
+                                @elseif ($tenantSettings->logo)
+                                    <img src="{{ $tenantSettings->logo }}" alt="Logo {{ $tenantSettings->site_name }}"
+                                        class="h-10 w-auto rounded-lg">
+                                @elseif ($tenantSettings->site_name)
+                                    @php
+                                        $names = explode(' ', $tenantSettings->site_name);
+                                    @endphp
+                                    <span class="text-xl font-bold text-primary">{{ $names[0] ?? '' }}
+                                        @if (isset($names[1]))
+                                            <span class="text-secondary">{{ $names[1] }}</span>
+                                        @endif
+                                    </span>
+                                @else
+                                    <span class="text-xl font-bold text-primary">Seu Site</span>
+                                @endif
+                            </a>
+                        </div>
+                    </a>
+                </div>
 
-                <div class="dropdown dropdown-end md:hidden ml-2">
-                    <label tabindex="0" class="btn btn-ghost btn-circle" aria-label="Abrir menu de navegação">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                <div class="flex-none hidden lg:flex items-center gap-2">
+                    {{-- <nav class="flex items-center">
+                        <ul class="menu menu-horizontal px-1 gap-1">
+                            <li><a href="#" class="font-medium hover:text-primary">Início</a></li>
+                            <li><a href="#destaques" class="font-medium hover:text-primary">Destaques</a></li>
+                            <li><a href="#sobre" class="font-medium hover:text-primary">Sobre</a></li>
+                            <li><a href="#contato" class="font-medium hover:text-primary">Contato</a></li>
+                            @if (auth()->check())
+                                <li><a href="/admin" class="font-medium hover:text-primary">Dashboard</a></li>
+                            @else
+                                <li><a href="/login" class="font-medium hover:text-primary">Login</a></li>
+                            @endif
+                        </ul>
+                    </nav>
+
+                    <div class="divider divider-horizontal h-6 mx-2"></div> --}}
+
+                    <div class="flex items-center gap-2 mr-4">
+                        @if ($tenantSettings->social_facebook)
+                            <a href="{{ $tenantSettings->social_facebook }}"
+                                class="btn btn-ghost btn-circle btn-sm hover:text-primary">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                        @endif
+                        @if ($tenantSettings->social_instagram)
+                            <a href="{{ $tenantSettings->social_instagram }}"
+                                class="btn btn-ghost btn-circle btn-sm hover:text-primary">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        @endif
+                        @if ($tenantSettings->social_linkedin)
+                            <a href="{{ $tenantSettings->social_linkedin }}"
+                                class="btn btn-ghost btn-circle btn-sm hover:text-primary">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        @endif
+                    </div>
+
+                    <a href="https://wa.me/{{ $tenantSettings->social_whatsapp }}"
+                        class="btn btn-primary btn-sm md:btn-md gap-2">
+                        <i class="fab fa-whatsapp"></i>
+                        <span class="hidden sm:inline">{{ $tenantSettings->contact_phone }}</span>
+                    </a>
+                </div>
+
+                <div class="flex-none lg:hidden">
+                    <label for="mobile-menu" class="btn btn-ghost btn-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </label>
-                    <ul tabindex="0"
-                        class="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52 font-medium">
-                        <li><a href="#destaques">Destaques</a></li>
-                        <li><a href="#sobre">Sobre Nós</a></li>
-                        <li><a href="#recentes">Recentes</a></li>
-                        <li><a href="#contato">Contato</a></li>
-                    </ul>
                 </div>
+            </div>
+        </div>
+
+        <input type="checkbox" id="mobile-menu" class="drawer-toggle">
+        <div class="drawer-side z-50">
+            <label for="mobile-menu" class="drawer-overlay"></label>
+            <div class="menu p-4 w-80 h-full bg-base-100 text-base-content">
+                <div class="flex items-center justify-between mb-6">
+                    <a href="#" class="text-xl font-bold text-primary">Imobiliária<span
+                            class="text-secondary">Premium</span></a>
+                    <label for="mobile-menu" class="btn btn-ghost btn-circle">
+                        <i class="fas fa-times"></i>
+                    </label>
+                </div>
+
+                <ul class="space-y-2">
+                    <li><a href="#" class="font-medium">Início</a></li>
+                    <li><a href="#destaques" class="font-medium">Destaques</a></li>
+                    <li><a href="#sobre" class="font-medium">Sobre</a></li>
+                    <li><a href="#contato" class="font-medium">Contato</a></li>
+                    <li><a href="/login" class="font-medium">Login</a></li>
+                </ul>
+
+                <div class="divider my-4"></div>
+
+                <div class="flex justify-center gap-4 mb-6">
+                    @if ($tenantSettings->social_facebook)
+                        <a href="{{ $tenantSettings->social_facebook }}" class="btn btn-ghost btn-circle">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                    @endif
+                    @if ($tenantSettings->social_instagram)
+                        <a href="{{ $tenantSettings->social_instagram }}" class="btn btn-ghost btn-circle">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    @endif
+                    @if ($tenantSettings->social_linkedin)
+                        <a href="{{ $tenantSettings->social_linkedin }}" class="btn btn-ghost btn-circle">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    @endif
+                </div>
+
+                <a href="https://wa.me/{{ $tenantSettings->social_whatsapp }}" class="btn btn-primary gap-2">
+                    <i class="fab fa-whatsapp"></i>
+                    {{ $tenantSettings->contact_phone }}
+                </a>
             </div>
         </div>
     </header>
 
-    <section class="relative h-96 md:h-[450px] bg-cover bg-center flex items-center justify-center text-white p-4"
-        style="background-image: url('https://images.unsplash.com/photo-1516156007-ad0749a37e19?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');">
-        <div class="absolute inset-0 bg-black bg-opacity-60"></div>
-        <div class="relative z-10 text-center animate-fade-in">
-            <h1 class="text-4xl md:text-6xl font-extrabold mb-4 leading-tight drop-shadow-lg">
-                Encontre o Lar dos Seus Sonhos
-            </h1>
-            <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto drop-shadow-md">
-                Milhares de imóveis selecionados nas melhores localizações para você e sua família.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="#imoveis" class="btn btn-primary btn-lg transform hover:scale-105 transition-transform duration-200">
-                    <i class="fas fa-search mr-2"></i> Explorar Imóveis
-                </a>
-                <a href="#contato" class="btn btn-outline btn-lg text-white border-white hover:bg-white hover:text-primary transform hover:scale-105 transition-transform duration-200">
-                    <i class="fas fa-phone-alt mr-2"></i> Fale Conosco
-                </a>
+    <!-- Hero Minimalista -->
+    <section class="relative h-96 bg-base-200 flex items-center">
+        <!-- Fundo com gradiente sutil -->
+        <div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 z-0"></div>
+
+        <!-- Conteúdo -->
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="max-w-2xl">
+                <h1 class="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+                    Seu próximo lar <span class="text-primary">está aqui</span>
+                </h1>
+                <p class="text-xl mb-8 opacity-90">
+                    Encontre imóveis selecionados com as melhores localizações e condições
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="#destaques" class="btn btn-primary btn-lg">
+                        <i class="fas fa-home mr-2"></i> Ver Destaques
+                    </a>
+                    <a href="#contato" class="btn btn-outline btn-lg">
+                        <i class="fas fa-headset mr-2"></i> Fale com Corretor
+                    </a>
+                </div>
             </div>
         </div>
+
+        <!-- Elemento decorativo -->
+        <div class="absolute bottom-0 left-0 right-0 h-16 bg-base-100/80"></div>
     </section>
 
-    <main class="container mx-auto px-4 py-12 flex-grow">
+    <main class="container mx-auto px-4 py-8" x-data="propertyFilter()">
         <div class="flex flex-col lg:flex-row gap-8">
-            <aside class="lg:w-80 shrink-0" x-init="$watch('filtersOpen', (value) => { if (!value && window.innerWidth < 1024) { /* Opcional: fechar ao clicar fora, etc. */ } })">
-                <div class="lg:sticky lg:top-24 bg-base-100 p-6 rounded-xl shadow-lg">
-                    <button @click="filtersOpen = !filtersOpen"
-                        class="btn btn-primary w-full lg:hidden mb-6 flex items-center justify-center">
+            <!-- Filtros - Sidebar -->
+            <aside class="lg:w-80 shrink-0">
+                <div class="sticky top-24">
+                    <button @click="filtersOpen = !filtersOpen" class="btn btn-primary w-full lg:hidden mb-4">
                         <i class="fas fa-filter mr-2"></i>
                         <span x-text="filtersOpen ? 'Ocultar Filtros' : 'Mostrar Filtros'"></span>
                     </button>
 
-                    <div x-show="filtersOpen" x-transition:enter="transition ease-out duration-300"
-                        x-transition:enter-start="opacity-0 transform -translate-y-4"
-                        x-transition:enter-end="opacity-100 transform translate-y-0"
-                        x-transition:leave="transition ease-in duration-200"
-                        x-transition:leave-start="opacity-100 transform translate-y-0"
-                        x-transition:leave-end="opacity-0 transform -translate-y-4"
-                        class="space-y-8">
-                        <h2 class="text-2xl font-bold text-center mb-6 text-primary">Filtrar Imóveis</h2>
+                    <div x-show="filtersOpen" class="bg-base-100 p-6 rounded-xl shadow-md space-y-6">
+                        <h2 class="text-xl font-bold">Filtrar Imóveis</h2>
 
+                        <!-- Tipo de Imóvel -->
                         <div>
-                            <h3 class="font-semibold mb-3 text-lg">Tipo de Imóvel</h3>
-                            <div class="grid grid-cols-2 gap-2">
-                                <label class="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-base-200 transition-colors duration-150">
-                                    <input type="radio" name="propertyType" value="all" x-model="propertyType"
-                                        class="radio radio-primary" checked>
-                                    <span>Todos</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-base-200 transition-colors duration-150">
-                                    <input type="radio" name="propertyType" value="house" x-model="propertyType"
-                                        class="radio radio-primary">
-                                    <span>Casas</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-base-200 transition-colors duration-150">
-                                    <input type="radio" name="propertyType" value="apartment" x-model="propertyType"
-                                        class="radio radio-primary">
-                                    <span>Apartamentos</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-base-200 transition-colors duration-150">
-                                    <input type="radio" name="propertyType" value="land" x-model="propertyType"
-                                        class="radio radio-primary">
-                                    <span>Terrenos</span>
-                                </label>
-                                <label class="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-base-200 transition-colors duration-150">
-                                    <input type="radio" name="propertyType" value="commercial" x-model="propertyType"
-                                        class="radio radio-primary">
-                                    <span>Comercial</span>
-                                </label>
+                            <h3 class="font-semibold mb-2">Tipo de Imóvel</h3>
+                            <div class="space-y-2">
+                                <template x-for="type in propertyTypes">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="property_type" x-model="filters.property_type"
+                                            :value="type.value" @change="applyFilters()"
+                                            class="radio radio-primary">
+                                        <span x-text="type.label"></span>
+                                    </label>
+                                </template>
                             </div>
                         </div>
 
-                        <div x-data="{
-                            minPriceDisplay: 0,
-                            maxPriceDisplay: 2000000,
-                            init() {
-                                this.minPriceDisplay = this.currentMinPrice;
-                                this.maxPriceDisplay = this.currentMaxPrice;
-                                $watch('currentMinPrice', val => this.minPriceDisplay = val);
-                                $watch('currentMaxPrice', val => this.maxPriceDisplay = val);
-                            },
-                            formatCurrency(value) {
-                                return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value)
-                            },
-                            updatePriceRange() {
-                                if (this.currentMinPrice > this.currentMaxPrice) {
-                                    [this.currentMinPrice, this.currentMaxPrice] = [this.currentMaxPrice, this.currentMinPrice];
-                                }
-                            }
-                        }">
-                            <h3 class="font-semibold mb-3 text-lg">Faixa de Preço</h3>
-                            <div class="flex justify-between mb-4 font-bold text-primary">
-                                <span x-text="formatCurrency(minPriceDisplay)"></span>
-                                <span x-text="formatCurrency(maxPriceDisplay)"></span>
-                            </div>
-                            <div class="relative mb-6">
-                                <input type="range" :min="minPrice" :max="maxPrice" x-model.number="currentMinPrice"
-                                    @input="updatePriceRange"
-                                    class="range range-primary range-xs absolute w-full z-20 appearance-none bg-transparent"
-                                    style="padding:0; margin:0;" step="10000" aria-label="Preço mínimo">
-                                <input type="range" :min="minPrice" :max="maxPrice" x-model.number="currentMaxPrice"
-                                    @input="updatePriceRange"
-                                    class="range range-primary range-xs absolute w-full z-20 appearance-none bg-transparent"
-                                    style="padding:0; margin:0;" step="10000" aria-label="Preço máximo">
-                                <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 bg-base-300 rounded-full z-10"></div>
+                        <!-- Tipo de Transação -->
+                        <div>
+                            <h3 class="font-semibold mb-2">Tipo de Transação</h3>
+                            <div class="space-y-2">
+                                <template x-for="transaction in transactionTypes">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="transaction_type"
+                                            x-model="filters.transaction_type" :value="transaction.value"
+                                            @change="applyFilters()" class="radio radio-primary">
+                                        <span x-text="transaction.label"></span>
+                                    </label>
+                                </template>
                             </div>
                         </div>
 
-
+                        <!-- Faixa de Preço -->
                         <div>
-                            <h3 class="font-semibold mb-3 text-lg">Quartos</h3>
+                            <h3 class="font-semibold mb-2">Faixa de Preço</h3>
+                            <div>
+                                <div class="flex justify-between mb-2">
+                                    <span x-text="formatCurrency(filters.min_price)"></span>
+                                    <span x-text="formatCurrency(filters.max_price)"></span>
+                                </div>
+                                <input type="range" x-model="filters.min_price" min="0" max="5000000"
+                                    step="10000" @change="applyFilters()"
+                                    class="range range-primary range-xs mb-4">
+                                <input type="range" x-model="filters.max_price" min="0" max="5000000"
+                                    step="10000" @change="applyFilters()" class="range range-primary range-xs">
+                            </div>
+                        </div>
+
+                        <!-- Quartos -->
+                        <div>
+                            <h3 class="font-semibold mb-2">Quartos</h3>
                             <div class="flex flex-wrap gap-2">
-                                <button @click="bedrooms = 'all'" :class="{'btn-primary': bedrooms === 'all', 'btn-outline': bedrooms !== 'all'}" class="btn btn-sm">Todos</button>
-                                <button @click="bedrooms = '1+'" :class="{'btn-primary': bedrooms === '1+', 'btn-outline': bedrooms !== '1+'}" class="btn btn-sm">1+</button>
-                                <button @click="bedrooms = '2+'" :class="{'btn-primary': bedrooms === '2+', 'btn-outline': bedrooms !== '2+'}" class="btn btn-sm">2+</button>
-                                <button @click="bedrooms = '3+'" :class="{'btn-primary': bedrooms === '3+', 'btn-outline': bedrooms !== '3+'}" class="btn btn-sm">3+</button>
-                                <button @click="bedrooms = '4+'" :class="{'btn-primary': bedrooms === '4+', 'btn-outline': bedrooms !== '4+'}" class="btn btn-sm">4+</button>
+                                <template x-for="n in 5">
+                                    <button
+                                        @click="filters.bedrooms = (filters.bedrooms === n ? null : n); applyFilters()"
+                                        :class="filters.bedrooms === n ? 'btn btn-sm' : 'btn btn-sm btn-outline'"
+                                        x-text="n === 5 ? '5+' : n"></button>
+                                </template>
                             </div>
                         </div>
 
+                        <!-- Banheiros -->
                         <div>
-                            <h3 class="font-semibold mb-3 text-lg">Banheiros</h3>
+                            <h3 class="font-semibold mb-2">Banheiros</h3>
                             <div class="flex flex-wrap gap-2">
-                                <button @click="bathrooms = 'all'" :class="{'btn-primary': bathrooms === 'all', 'btn-outline': bathrooms !== 'all'}" class="btn btn-sm">Todos</button>
-                                <button @click="bathrooms = '1+'" :class="{'btn-primary': bathrooms === '1+', 'btn-outline': bathrooms !== '1+'}" class="btn btn-sm">1+</button>
-                                <button @click="bathrooms = '2+'" :class="{'btn-primary': bathrooms === '2+', 'btn-outline': bathrooms !== '2+'}" class="btn btn-sm">2+</button>
-                                <button @click="bathrooms = '3+'" :class="{'btn-primary': bathrooms === '3+', 'btn-outline': bathrooms !== '3+'}" class="btn btn-sm">3+</button>
+                                <template x-for="n in 3">
+                                    <button
+                                        @click="filters.bathrooms = (filters.bathrooms === n ? null : n); applyFilters()"
+                                        :class="filters.bathrooms === n ? 'btn btn-sm' : 'btn btn-sm btn-outline'"
+                                        x-text="n === 3 ? '3+' : n"></button>
+                                </template>
                             </div>
                         </div>
 
+                        <!-- Área -->
                         <div>
-                            <h3 class="font-semibold mb-3 text-lg">Vagas</h3>
-                            <div class="flex flex-wrap gap-2">
-                                <button @click="parkingSpaces = 'all'" :class="{'btn-primary': parkingSpaces === 'all', 'btn-outline': parkingSpaces !== 'all'}" class="btn btn-sm">Todas</button>
-                                <button @click="parkingSpaces = '1+'" :class="{'btn-primary': parkingSpaces === '1+', 'btn-outline': parkingSpaces !== '1+'}" class="btn btn-sm">1+</button>
-                                <button @click="parkingSpaces = '2+'" :class="{'btn-primary': parkingSpaces === '2+', 'btn-outline': parkingSpaces !== '2+'}" class="btn btn-sm">2+</button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3 class="font-semibold mb-3 text-lg">Área (m²)</h3>
+                            <h3 class="font-semibold mb-2">Área (m²)</h3>
                             <div class="flex gap-4">
-                                <div class="form-control w-1/2">
-                                    <label class="label p-0">
-                                        <span class="label-text text-xs">Mínima</span>
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text">Mínima</span>
                                     </label>
-                                    <input type="number" x-model.number="minArea" placeholder="0"
-                                        class="input input-bordered w-full input-sm text-sm" aria-label="Área mínima">
+                                    <input type="number" x-model="filters.min_area"
+                                        @change.debounce.500ms="applyFilters()" placeholder="0"
+                                        class="input input-bordered w-full">
                                 </div>
-                                <div class="form-control w-1/2">
-                                    <label class="label p-0">
-                                        <span class="label-text text-xs">Máxima</span>
+                                <div class="form-control">
+                                    <label class="label">
+                                        <span class="label-text">Máxima</span>
                                     </label>
-                                    <input type="number" x-model.number="maxArea" placeholder="Qualquer"
-                                        class="input input-bordered w-full input-sm text-sm" aria-label="Área máxima">
+                                    <input type="number" x-model="filters.max_area"
+                                        @change.debounce.500ms="applyFilters()" placeholder="Qualquer"
+                                        class="input input-bordered w-full">
                                 </div>
                             </div>
                         </div>
 
-                        <div class="pt-6 border-t border-base-300 mt-8">
-                            <button class="btn btn-primary w-full mb-3 text-lg">
-                                <i class="fas fa-check-circle mr-2"></i> Aplicar Filtros
-                            </button>
-                            <button class="btn btn-ghost w-full text-base-content hover:text-primary transition-colors duration-200" @click="
-                                propertyType = 'all';
-                                currentMinPrice = 200000;
-                                currentMaxPrice = 1000000;
-                                bedrooms = 'all';
-                                bathrooms = 'all';
-                                parkingSpaces = 'all';
-                                minArea = null;
-                                maxArea = null;
-                            ">
-                                <i class="fas fa-redo mr-2"></i> Limpar Filtros
-                            </button>
+                        <!-- Botões -->
+                        <div class="pt-4">
+                            <button @click="resetFilters()" class="btn btn-ghost w-full mb-2">Limpar Filtros</button>
                         </div>
                     </div>
                 </div>
             </aside>
 
-            <section class="flex-1" id="imoveis">
-                <h2 class="text-3xl font-bold mb-8 text-center lg:text-left text-primary">Imóveis Disponíveis</h2>
-
-                <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-base-100 p-4 rounded-lg shadow-sm">
-                    <div class="text-sm md:text-base text-gray-600 dark:text-gray-400">
-                        <span class="font-semibold text-lg text-neutral">12</span> imóveis encontrados
+            <!-- Lista de Imóveis -->
+            <div class="flex-1">
+                <!-- Ordenação e Contagem -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <div class="text-sm">
+                        <span class="font-semibold" x-text="totalProperties"></span> imóveis encontrados
                     </div>
-                    <div class="flex items-center gap-3">
-                        <label for="sort-select" class="text-sm md:text-base text-gray-600 dark:text-gray-400 hidden sm:block">Ordenar por:</label>
-                        <select id="sort-select" x-model="sortOrder" class="select select-bordered select-sm w-full max-w-xs">
-                            <option value="relevance">Relevância</option>
-                            <option value="price-asc">Menor Preço</option>
-                            <option value="price-desc">Maior Preço</option>
-                            <option value="recent">Mais Recentes</option>
-                            <option value="area-desc">Maior Área</option>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm hidden md:block">Ordenar por:</span>
+                        <select class="select select-bordered select-sm" x-model="filters.order_by"
+                            @change="applyFilters()">
+                            <option value="created_at:desc">Mais Recentes</option>
+                            <option value="price:asc">Menor Preço</option>
+                            <option value="price:desc">Maior Preço</option>
+                            <option value="area:desc">Maior Área</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" x-data="{
-                    properties: [
-                        {
-                            id: 1,
-                            title: 'Casa Moderna no Centro',
-                            location: 'Centro, São Paulo',
-                            bedrooms: 3,
-                            bathrooms: 2,
-                            area: 180,
-                            price: 850000,
-                            image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-                            featured: true,
-                            description: 'Esta casa moderna no coração da cidade oferece conforto e sofisticação. Com acabamentos de alta qualidade e uma localização privilegiada, é a escolha perfeita para quem busca praticidade e estilo de vida urbano.',
-                            rating: 4.5,
-                            reviews: 12,
-                            parking: 2,
-                            type: 'house'
-                        },
-                        {
-                            id: 2,
-                            title: 'Apartamento Luxuoso',
-                            location: 'Zona Sul, Rio de Janeiro',
-                            bedrooms: 4,
-                            bathrooms: 3,
-                            area: 220,
-                            price: 1250000,
-                            image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-                            featured: false,
-                            description: 'Apartamento de alto padrão com vista para o mar, acabamentos em mármore, cozinha gourmet equipada, sacada ampla e lazer completo com piscina, sauna e academia.',
-                            rating: 4.0,
-                            reviews: 8,
-                            parking: 2,
-                            type: 'apartment'
-                        },
-                        {
-                            id: 3,
-                            title: 'Casa com Piscina Incrível',
-                            location: 'Zona Oeste, Belo Horizonte',
-                            bedrooms: 5,
-                            bathrooms: 4,
-                            area: 350,
-                            price: 2500000,
-                            image: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-                            featured: false,
-                            new: true,
-                            description: 'Mansão moderna com piscina, área gourmet, home theater, jardim vertical e amplos espaços de convivência. Projeto arquitetônico premiado com integração perfeita entre áreas internas e externas.',
-                            rating: 5.0,
-                            reviews: 15,
-                            parking: 4,
-                            type: 'house'
-                        },
-                        {
-                            id: 4,
-                            title: 'Apartamento Compacto e Moderno',
-                            location: 'Centro, Curitiba',
-                            bedrooms: 2,
-                            bathrooms: 1,
-                            area: 65,
-                            price: 320000,
-                            image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-                            new: true,
-                            description: 'Ideal para solteiros ou casais, este apartamento oferece praticidade e conforto em uma localização privilegiada. Perto de comércios, transportes e parques.',
-                            rating: 3.5,
-                            reviews: 5,
-                            parking: 1,
-                            type: 'apartment'
-                        },
-                        {
-                            id: 5,
-                            title: 'Terreno Amplo para Construção',
-                            location: 'Alphaville, São Paulo',
-                            bedrooms: 0,
-                            bathrooms: 0,
-                            area: 1200,
-                            price: 980000,
-                            image: 'https://images.unsplash.com/photo-1543285198-ed21122a7e71?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-                            featured: false,
-                            description: 'Ótimo terreno em condomínio fechado, perfeito para construir a casa dos seus sonhos. Infraestrutura completa e segurança 24h.',
-                            rating: 4.0,
-                            reviews: 3,
-                            parking: 0,
-                            type: 'land'
-                        },
-                        {
-                            id: 6,
-                            title: 'Sala Comercial de Alto Padrão',
-                            location: 'Av. Paulista, São Paulo',
-                            bedrooms: 0,
-                            bathrooms: 2,
-                            area: 150,
-                            price: 1800000,
-                            image: 'https://images.unsplash.com/photo-1590487958197-0ec99df5e970?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-                            featured: true,
-                            description: 'Localização estratégica na Av. Paulista, ideal para escritórios e clínicas. Espaços amplos e modernos com toda a infraestrutura necessária.',
-                            rating: 4.8,
-                            reviews: 10,
-                            parking: 3,
-                            type: 'commercial'
-                        }
-                    ],
-                    filteredProperties() {
-                        return this.properties.filter(property => {
-                            let match = true;
-
-                            // Filter by type
-                            if (this.propertyType !== 'all' && property.type !== this.propertyType) {
-                                match = false;
-                            }
-
-                            // Filter by price range
-                            if (property.price < this.currentMinPrice || property.price > this.currentMaxPrice) {
-                                match = false;
-                            }
-
-                            // Filter by bedrooms
-                            if (this.bedrooms !== 'all') {
-                                const minBeds = parseInt(this.bedrooms.replace('+', ''));
-                                if (property.bedrooms < minBeds) {
-                                    match = false;
-                                }
-                            }
-
-                            // Filter by bathrooms
-                            if (this.bathrooms !== 'all') {
-                                const minBaths = parseInt(this.bathrooms.replace('+', ''));
-                                if (property.bathrooms < minBaths) {
-                                    match = false;
-                                }
-                            }
-
-                            // Filter by parking spaces
-                            if (this.parkingSpaces !== 'all') {
-                                const minParking = parseInt(this.parkingSpaces.replace('+', ''));
-                                if (property.parking < minParking) {
-                                    match = false;
-                                }
-                            }
-
-                            // Filter by area
-                            if (this.minArea !== null && property.area < this.minArea) {
-                                match = false;
-                            }
-                            if (this.maxArea !== null && property.area > this.maxArea) {
-                                match = false;
-                            }
-
-                            return match;
-                        }).sort((a, b) => {
-                            if (this.sortOrder === 'price-asc') return a.price - b.price;
-                            if (this.sortOrder === 'price-desc') return b.price - a.price;
-                            if (this.sortOrder === 'area-desc') return b.area - a.area;
-                            // Default or 'relevance'
-                            return 0;
-                        });
-                    }
-                }">
-                    <template x-for="property in filteredProperties()" :key="property.id">
-                        <a :href="`detalhes.html?id=${property.id}`" class="block">
-                            <div class="property-card card w-full bg-base-100 shadow-xl image-full group animate-fade-in"
-                                :style="`animation-delay: ${property.id * 0.05}s;`">
-                                <figure class="h-64 sm:h-72 lg:h-64 xl:h-72 overflow-hidden">
-                                    <img :src="property.image" :alt="property.title"
-                                        class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
-                                        loading="lazy">
-                                </figure>
-                                <div class="card-body p-6 relative justify-end">
-                                    <div class="absolute top-4 right-4 flex gap-2">
-                                        <span x-show="property.featured" class="badge badge-primary font-bold">Destaque</span>
-                                        <span x-show="property.new" class="badge badge-secondary font-bold">Novo</span>
-                                    </div>
-
-                                    <h3 class="card-title text-white text-2xl font-bold mb-1 leading-tight group-hover:text-primary transition-colors duration-200" x-text="property.title"></h3>
-                                    <p class="text-gray-200 text-sm mb-4 flex items-center">
-                                        <i class="fas fa-map-marker-alt mr-2 text-primary"></i>
-                                        <span x-text="property.location"></span>
-                                    </p>
-
-                                    <div class="flex flex-wrap gap-x-4 gap-y-2 text-white text-sm mb-4">
-                                        <div class="flex items-center">
-                                            <i class="fas fa-bed mr-2 text-primary"></i>
-                                            <span x-text="property.bedrooms > 0 ? `${property.bedrooms} Quartos` : 'N/A'"></span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <i class="fas fa-bath mr-2 text-primary"></i>
-                                            <span x-text="property.bathrooms > 0 ? `${property.bathrooms} Banheiros` : 'N/A'"></span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <i class="fas fa-ruler-combined mr-2 text-primary"></i>
-                                            <span x-text="`${property.area} m²`"></span>
-                                        </div>
-                                        <div class="flex items-center">
-                                            <i class="fas fa-car mr-2 text-primary"></i>
-                                            <span x-text="property.parking > 0 ? `${property.parking} Vagas` : 'N/A'"></span>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex items-center justify-between mt-4">
-                                        <span class="text-3xl font-extrabold text-white"
-                                            x-text="new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(property.price)"></span>
-                                        <button class="btn btn-primary btn-sm md:btn-md">
-                                            <i class="fas fa-eye mr-2"></i> Detalhes
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </template>
-
-                    <div x-show="filteredProperties().length === 0" class="col-span-full text-center py-10 text-xl text-gray-500">
-                        Nenhum imóvel encontrado com os filtros aplicados.
-                    </div>
+                <!-- Lista de Imóveis -->
+                <div id="property-list" class="space-y-6">
+                    @include('partials.property-list', ['properties' => $properties])
                 </div>
-
-
-                <div class="flex justify-center mt-12">
-                    <div class="join shadow-md">
-                        <button class="join-item btn btn-outline border-base-300 hover:bg-primary hover:border-primary hover:text-white transition-colors duration-200">
-                            <i class="fas fa-chevron-left"></i> Anterior
-                        </button>
-                        <button class="join-item btn btn-primary border-primary">1</button>
-                        <button class="join-item btn btn-outline border-base-300 hover:bg-primary hover:border-primary hover:text-white transition-colors duration-200">2</button>
-                        <button class="join-item btn btn-outline border-base-300 hover:bg-primary hover:border-primary hover:text-white transition-colors duration-200">3</button>
-                        <button class="join-item btn btn-outline border-base-300 hover:bg-primary hover:border-primary hover:text-white transition-colors duration-200">4</button>
-                        <button class="join-item btn btn-outline border-base-300 hover:bg-primary hover:border-primary hover:text-white transition-colors duration-200">
-                            Próxima <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-                </div>
-            </section>
+            </div>
         </div>
     </main>
 
-    <footer class="footer footer-center p-10 bg-neutral text-neutral-content rounded mt-12">
-        <aside>
-            <a href="#" class="btn btn-ghost normal-case text-3xl font-extrabold text-primary mb-4"
-                aria-label="Voltar para a página inicial da Imobiliária">Imobiliária</a>
-            <p class="font-bold">
-                Encontre seu lar ideal conosco. <br>Oferecendo os melhores imóveis desde 2020.
-            </p>
-            <p>Copyright © 2025 - Todos os direitos reservados</p>
-        </aside>
-        <nav>
-            <div class="grid grid-flow-col gap-4">
-                <a href="#" class="link link-hover text-2xl" aria-label="Link para Twitter"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="link link-hover text-2xl" aria-label="Link para YouTube"><i class="fab fa-youtube"></i></a>
-                <a href="#" class="link link-hover text-2xl" aria-label="Link para Facebook"><i class="fab fa-facebook-f"></i></a>
-            </div>
-        </nav>
-    </footer>
-
     <script>
         document.addEventListener('alpine:init', () => {
-            // No longer using Alpine.store for properties array,
-            // instead directly managing it within the component x-data for simplicity in this single file example.
-            // For larger apps, Alpine.store or external data fetching would be preferred.
-
-            // Ensure filtersOpen respects screen size on load
-            window.addEventListener('resize', () => {
-                Alpine.raw(Alpine.data('root')).filtersOpen = window.innerWidth >= 1024;
-            });
-        });
-
-        // Observador de interseção para animações
-        const animateOnScroll = () => {
-            const elements = document.querySelectorAll('.animate-fade-in');
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = 1;
-                        entry.target.style.transform = 'translateY(0)';
-                        observer.unobserve(entry.target);
+            Alpine.data('propertyFilter', () => ({
+                filtersOpen: true,
+                totalProperties: {{ $properties->total() }},
+                propertyTypes: [{
+                        value: '',
+                        label: 'Todos'
+                    },
+                    {
+                        value: 'Casa',
+                        label: 'Casa'
+                    },
+                    {
+                        value: 'Apartamento',
+                        label: 'Apartamento'
+                    },
+                    {
+                        value: 'Terreno',
+                        label: 'Terreno'
+                    },
+                    {
+                        value: 'Comercial',
+                        label: 'Comercial'
                     }
-                });
-            }, {
-                threshold: 0.1
-            });
+                ],
+                transactionTypes: [{
+                        value: '',
+                        label: 'Todos'
+                    },
+                    {
+                        value: 'Venda',
+                        label: 'Venda'
+                    },
+                    {
+                        value: 'Aluguel',
+                        label: 'Aluguel'
+                    }
+                ],
+                filters: {
+                    property_type: '',
+                    transaction_type: '',
+                    min_price: 0,
+                    max_price: 5000000,
+                    bedrooms: null,
+                    bathrooms: null,
+                    min_area: null,
+                    max_area: null,
+                    order_by: 'created_at:desc'
+                },
+                loading: false,
 
-            elements.forEach(el => {
-                el.style.opacity = 0;
-                el.style.transform = 'translateY(20px)';
-                observer.observe(el);
-            });
-        };
+                init() {
+                    // Se houver filtros na URL, aplica eles
+                    const urlParams = new URLSearchParams(window.location.search);
+                    for (const [key, value] of urlParams) {
+                        if (this.filters.hasOwnProperty(key)) {
+                            this.filters[key] = value;
+                        }
+                    }
 
-        document.addEventListener('DOMContentLoaded', animateOnScroll);
+                    // Formata preço inicial
+                    this.formatCurrency = this.debounce((value) => {
+                        return new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                            maximumFractionDigits: 0
+                        }).format(value);
+                    }, 300);
+                },
+
+                applyFilters() {
+                    this.loading = true;
+
+                    // Atualiza URL sem recarregar a página
+                    const queryString = new URLSearchParams();
+                    for (const [key, value] of Object.entries(this.filters)) {
+                        if (value !== null && value !== '') {
+                            queryString.set(key, value);
+                        }
+                    }
+                    history.pushState(null, null, `?${queryString.toString()}`);
+
+                    // Faz a requisição AJAX
+                    fetch(`/properties?${queryString.toString()}&ajax=1`)
+                        .then(response => response.json())
+                        .then(data => {
+                            document.getElementById('property-list').innerHTML = data.html;
+                            this.totalProperties = data.properties.total;
+                            this.loading = false;
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            this.loading = false;
+                        });
+                },
+
+                loadPage(url) {
+                    this.loading = true;
+                    fetch(`${url}&ajax=1`)
+                        .then(response => response.json())
+                        .then(data => {
+                            document.getElementById('property-list').innerHTML = data.html;
+                            this.totalProperties = data.properties.total;
+                            this.loading = false;
+                        });
+                },
+
+                resetFilters() {
+                    this.filters = {
+                        property_type: '',
+                        transaction_type: '',
+                        min_price: 0,
+                        max_price: 5000000,
+                        bedrooms: null,
+                        bathrooms: null,
+                        min_area: null,
+                        max_area: null,
+                        order_by: 'created_at:desc'
+                    };
+                    this.applyFilters();
+                },
+
+                debounce(func, wait) {
+                    let timeout;
+                    return function(...args) {
+                        const context = this;
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => func.apply(context, args), wait);
+                    };
+                }
+            }));
+        });
     </script>
 </body>
 
