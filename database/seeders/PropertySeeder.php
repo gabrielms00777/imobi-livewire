@@ -44,7 +44,7 @@ class PropertySeeder extends Seeder
                 'amenities' => json_encode(['Academia', 'Salão de Festas']),
                 'status' => 'available',
                 'is_featured' => true,
-                'main_image_url' => 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                'main_image_url' => 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGNhc2F8ZW58MHx8MHx8fDA%3D',
             ]);
         }
 
@@ -70,7 +70,7 @@ class PropertySeeder extends Seeder
                 'amenities' => json_encode(['Churrasqueira', 'Jardim']),
                 'status' => 'available',
                 'is_featured' => true,
-                'main_image_url' => 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                'main_image_url' => 'https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8Y2FzYXxlbnwwfHwwfHx8MA%3D%3D',
             ]);
 
             Property::create([
@@ -93,7 +93,7 @@ class PropertySeeder extends Seeder
                 'amenities' => json_encode(['Piscina Privativa', 'Espaço Gourmet', 'Sauna']),
                 'status' => 'available',
                 'is_featured' => false,
-                'main_image_url' => 'https://images.unsplash.com/photo-1605146769289-440113cc3d00?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                'main_image_url' => 'https://plus.unsplash.com/premium_photo-1661915661139-5b6a4e4a6fcc?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Y2FzYXxlbnwwfHwwfHx8MA%3D%3D',
             ]);
         }
 
@@ -119,7 +119,7 @@ class PropertySeeder extends Seeder
                 'amenities' => json_encode(['Portaria 24h', 'Área Verde']),
                 'status' => 'available',
                 'is_featured' => false,
-                'main_image_url' => 'https://images.unsplash.com/photo-1600566752225-53769df8b5e5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                'main_image_url' => 'https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y2FzYXxlbnwwfHwwfHx8MA%3D%3D',
             ]);
         }
     }

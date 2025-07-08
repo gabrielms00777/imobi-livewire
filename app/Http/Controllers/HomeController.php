@@ -25,11 +25,11 @@ class HomeController extends Controller
     {
         // Pega o tenant que foi definido pelo middleware
         $tenant = app('tenant');
-
+        // dd($tenant);
         // Pega as configurações específicas deste tenant
         // A relação tenantSettings já deve estar carregada pelo middleware
         $tenantSettings = $tenant->tenantSettings;
-        // dd($tenantSettings);
+        // dd($tenantSettings); 
 
         // Se por algum motivo o tenant não tiver configurações personalizadas,
         // você pode carregar um fallback ou criar uma na hora.

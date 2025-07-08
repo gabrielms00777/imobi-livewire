@@ -24,7 +24,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <style>
         :root {
@@ -75,7 +76,7 @@
         <div class="container mx-auto px-4">
             <div class="navbar">
                 <div class="flex-1">
-                    <a :href="route('tenant.home', ['tenantSlug' => $tenant->slug])" class="px-0">
+                    <a :href="route('tenant.home', ['tenantSlug' => $tenant - > slug])" class="px-0">
                         <div class="flex items-center">
                             @if ($tenantSettings->logo && $tenantSettings->show_logo_and_name)
                                 <img src="{{ $tenantSettings->logo }}" alt="Logo {{ $tenantSettings->site_name }}"
@@ -213,7 +214,7 @@
     </header>
 
     <section
-        class="relative py-20 @if ($tenantSettings->hero_background_type === 'gradient') bg-linear-{{ $tenantSettings->hero_gradient_direction }} from-{{ $tenantSettings->hero_gradient_from_color }} to-{{ $tenantSettings->hero_gradient_to_color }} @else overflow-hidden @endif">
+        class="relative py-20 @if ($tenantSettings->hero_background_type === 'gradient') bg-linear-{{ $tenantSettings->hero_gradient_direction }} from-[{{ $tenantSettings->hero_gradient_from_color }}] to-[{{ $tenantSettings->hero_gradient_to_color }}] @else overflow-hidden @endif">
         {{-- Condicional para exibir imagem de fundo --}}
         @if ($tenantSettings->hero_background_type === 'image')
             <img src="{{ $tenantSettings->hero_image_url }}" alt="{{ $tenantSettings->hero_image_alt_text }}"
@@ -304,7 +305,7 @@
                     <div class="property-card card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 animate-fade-in"
                         style="animation-delay: 0.1s">
                         <figure>
-                            <img src="{{ $property->image }}" alt="Casa moderna" class="h-64 w-full object-cover">
+                            <img src="{{ $property->main_image_url }}" alt="Casa moderna" class="h-64 w-full object-cover">
                             <span class="badge badge-primary absolute top-4 right-4">Destaque</span>
                         </figure>
                         <div class="card-body">
@@ -330,7 +331,7 @@
                             <div class="flex justify-between items-center">
                                 <span class="text-xl font-bold text-primary">R$
                                     {{ number_format($property->price, 0, ',', '.') }}</span>
-                                <a :href="route('tenant.properties', ['tenantSlug' => $tenant->slug, 'propertySlug' => $property->slug])"
+                                <a :href="route('tenant.property', ['tenantSlug' => $tenant->slug, 'id' => $property->id])"
                                     class="btn btn-sm btn-secondary">Detalhes</a>
                             </div>
                         </div>
@@ -344,6 +345,58 @@
             </div>
         </div>
     </section>
+
+    {{-- <section class="py-12 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-8">Imóveis em <span class="text-primary">Destaque</span></h2>
+
+            <div class="flex flex-wrap justify-center gap-8">
+                @forelse ($featuredProperties as $property)
+                    <div class="property-card card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 animate-fade-in"
+                        style="animation-delay: 0.1s; flex: 0 0 calc(33.333% - 2rem); max-width: calc(33.333% - 2rem);">
+                        <figure>
+                            <img src="{{ $property->main_image_url }}" alt="Casa moderna"
+                                class="h-64 w-full object-cover">
+                            <span class="badge badge-primary absolute top-4 right-4">Destaque</span>
+                        </figure>
+                        <div class="card-body">
+                            <h3 class="card-title">{{ $property->title }}</h3>
+                            <div class="flex items-center text-gray-500 mb-2">
+                                <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
+                                <span>{{ $property->address }}</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-4">
+                                <div>
+                                    <i class="fas fa-bed mr-1"></i>
+                                    <span>{{ $property->bedrooms }} Quartos</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-bath mr-1"></i>
+                                    <span>{{ $property->bathrooms }} Banheiros</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-ruler-combined mr-1"></i>
+                                    <span>{{ $property->area }}m²</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-primary">R$
+                                    {{ number_format($property->price, 0, ',', '.') }}</span>
+                                <a href="{{ route('tenant.property', ['tenantSlug' => $tenant->slug, 'id' => $property->id]) }}"
+                                    class="btn btn-sm btn-secondary">Detalhes</a>
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <p class="text-center text-gray-600 col-span-full">Nenhum imóvel em destaque encontrado.</p>
+                    @endforelse
+                </div>
+                <div class="text-center mt-8">
+                    <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug, 'filter' => 'destaque']) }}"
+                        class="btn btn-outline btn-primary">Ver mais imóveis</a>
+                </div>
+        </div>
+    </section> --}}
 
     <section id="sobre" class="py-16 bg-base-200">
         <div class="container mx-auto px-4">
