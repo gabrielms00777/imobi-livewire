@@ -12,6 +12,9 @@ use App\Livewire\Tenant\Properties\Index;
 
 // auth()->logout();
 
+Route::view('/teste', 'imoveis');
+Route::view('/teste1', 'welcome');
+
 
 Route::get('/login', Login::class)->name('login');
 Route::get('/register', Register::class)->name('register');
