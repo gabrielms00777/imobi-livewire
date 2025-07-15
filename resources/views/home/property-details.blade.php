@@ -874,7 +874,8 @@
                                 <span class="font-bold text-primary">R$
                                     {{ number_format($similarProperty->price ?? 0, 2, ',', '.') }}</span>
                                 {{-- Link para a página de detalhes do imóvel similar --}}
-                                <a href="{{ route('tenant.property.show', ['tenantSlug' => $tenant->slug, 'propertyId' => $similarProperty->id]) }}"
+                                {{-- <a href="{{ route('tenant.property.show', ['tenantSlug' => $tenant->slug, 'propertyId' => $similarProperty->id]) }}" --}}
+                                <a 
                                     class="btn btn-xs btn-outline btn-primary">Ver Detalhes</a>
                             </div>
                         </div>

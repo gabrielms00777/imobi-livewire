@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+{{-- <html lang="pt-BR" x-data="{ darkMode: false }" :class="{ 'dark': darkMode }"> --}}
+<html lang="pt-BR" x-data="{ darkMode: false }" :class="{ 'dark': darkMode }">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imobiliária - Encontre seu imóvel dos sonhos</title>
+    <meta name="description"
+        content="Encontre o imóvel perfeito para você com a nossa imobiliária. Temos apartamentos, casas, terrenos e mais.">
+
+
+    <!-- Tailwind CSS + DaisyUI -->
+    {{-- @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+    @else --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- Alpine JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --color-primary: {{ $siteSettings['primary_color'] ?? '#3b82f6' }};
+            --color-secondary: {{ $siteSettings['secondary_color'] ?? '#f63b3b' }};
+            --color-neutral: {{ $siteSettings['text_color'] }};
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        /* Animações personalizadas */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.9s ease-out forwards;
+        }
+
+        .property-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .property-card {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+
+<body class="bg-base-100 text-neutral">
+
+    <header x-data="{ isScrolled: false }" @scroll.window="isScrolled = window.scrollY > 50"
+        class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+        :class="isScrolled ? 'bg-white shadow-md dark:bg-neutral' : 'bg-transparent'">
+
+        <div class="container mx-auto px-4">
+            <div class="navbar">
+                {{-- <div class="flex-1">
+                    <a href="/" class="px-0">
+                        <div class="flex items-center">
+                            @if ($siteSettings['logo'])
+                                <img src="{{ $siteSettings['logo'] }}" alt="Logo {{ $siteSettings['site_name'] }}"
+                                    class="h-10 w-auto rounded-lg">
+                            @elseif ($siteSettings['site_name'])
+                                @php
+                                    $names = explode(' ', $siteSettings['site_name']);
+                                @endphp
+                                <span class="text-xl font-bold text-primary">{{ $names[0] ?? '' }}
+                                    @if (isset($names[1]))
+                                        <span class="text-secondary">{{ $names[1] }}</span>
+                                    @endif
+                                </span>
+                            @else
+                                <span class="text-xl font-bold text-primary">Seu Site</span>
+                            @endif
+                        </div>
+                    </a>
+                </div> --}}
+
+                <div class="flex-1">
+                    <a href="/" class="px-0">
+                        <div class="flex items-center">
+                            @if ($siteSettings['logo'] && $siteSettings['show_logo_and_name'])
+                                <img src="{{ $siteSettings['logo'] }}" alt="Logo {{ $siteSettings['site_name'] }}"
+                                    class="h-8 w-auto mr-2 rounded-lg">
+                                @php
+                                    $names = explode(' ', $siteSettings['site_name']);
+                                @endphp
+                                <span class="text-xl font-bold text-primary">{{ $names[0] ?? '' }}
+                                    @if (isset($names[1]))
+                                        <span class="text-secondary">{{ $names[1] }}</span>
+                                    @endif
+                                </span>
+                            @elseif ($siteSettings['logo'])
+                                <img src="{{ $siteSettings['logo'] }}" alt="Logo {{ $siteSettings['site_name'] }}"
+                                    class="h-10 w-auto rounded-lg">
+                            @elseif ($siteSettings['site_name'])
+                                @php
+                                    $names = explode(' ', $siteSettings['site_name']);
+                                @endphp
+                                <span class="text-xl font-bold text-primary">{{ $names[0] ?? '' }}
+                                    @if (isset($names[1]))
+                                        <span class="text-secondary">{{ $names[1] }}</span>
+                                    @endif
+                                </span>
+                            @else
+                                <span class="text-xl font-bold text-primary">Seu Site</span>
+                            @endif
+                        </div>
+                    </a>
+                </div>
+
+                <div class="flex-none hidden lg:flex items-center gap-2">
+                    <nav class="flex items-center">
+                        <ul class="menu menu-horizontal px-1 gap-1">
+                            <li><a href="#" class="font-medium hover:text-primary">Início</a></li>
+                            <li><a href="#destaques" class="font-medium hover:text-primary">Destaques</a></li>
+                            <li><a href="#sobre" class="font-medium hover:text-primary">Sobre</a></li>
+                            <li><a href="#contato" class="font-medium hover:text-primary">Contato</a></li>
+                            @if (auth()->check())
+                                <li><a href="/admin" class="font-medium hover:text-primary">Dashboard</a></li>
+                            @else
+                                <li><a href="/login" class="font-medium hover:text-primary">Login</a></li>
+                            @endif
+                        </ul>
+                    </nav>
+
+                    <div class="divider divider-horizontal h-6 mx-2"></div>
+
+                    <div class="flex items-center gap-2 mr-4">
+                        @if ($contactInfo['social_media']['facebook'])
+                            <a href="{{ $contactInfo['social_media']['facebook'] }}"
+                                class="btn btn-ghost btn-circle btn-sm hover:text-primary">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                        @endif
+                        @if ($contactInfo['social_media']['instagram'])
+                            <a href="{{ $contactInfo['social_media']['instagram'] }}"
+                                class="btn btn-ghost btn-circle btn-sm hover:text-primary">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        @endif
+                        @if ($contactInfo['social_media']['linkedin'])
+                            <a href="{{ $contactInfo['social_media']['linkedin'] }}"
+                                class="btn btn-ghost btn-circle btn-sm hover:text-primary">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        @endif
+                    </div>
+
+                    <a href="https://wa.me/{{ $contactInfo['whatsapp'] }}"
+                        class="btn btn-primary btn-sm md:btn-md gap-2">
+                        <i class="fab fa-whatsapp"></i>
+                        <span class="hidden sm:inline">{{ $contactInfo['phone'] }}</span>
+                    </a>
+                </div>
+
+                <div class="flex-none lg:hidden">
+                    <label for="mobile-menu" class="btn btn-ghost btn-circle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <input type="checkbox" id="mobile-menu" class="drawer-toggle">
+        <div class="drawer-side z-50">
+            <label for="mobile-menu" class="drawer-overlay"></label>
+            <div class="menu p-4 w-80 h-full bg-base-100 text-base-content">
+                <div class="flex items-center justify-between mb-6">
+                    <a href="#" class="text-xl font-bold text-primary">Imobiliária<span
+                            class="text-secondary">Premium</span></a>
+                    <label for="mobile-menu" class="btn btn-ghost btn-circle">
+                        <i class="fas fa-times"></i>
+                    </label>
+                </div>
+
+                <ul class="space-y-2">
+                    <li><a href="#" class="font-medium">Início</a></li>
+                    <li><a href="#destaques" class="font-medium">Destaques</a></li>
+                    <li><a href="#sobre" class="font-medium">Sobre</a></li>
+                    <li><a href="#contato" class="font-medium">Contato</a></li>
+                    <li><a href="/login" class="font-medium">Login</a></li>
+                </ul>
+
+                <div class="divider my-4"></div>
+
+                <div class="flex justify-center gap-4 mb-6">
+                    @if ($contactInfo['social_media']['facebook'])
+                        <a href="{{ $contactInfo['social_media']['facebook'] }}" class="btn btn-ghost btn-circle">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                    @endif
+                    @if ($contactInfo['social_media']['instagram'])
+                        <a href="{{ $contactInfo['social_media']['instagram'] }}" class="btn btn-ghost btn-circle">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    @endif
+                    @if ($contactInfo['social_media']['linkedin'])
+                        <a href="{{ $contactInfo['social_media']['linkedin'] }}" class="btn btn-ghost btn-circle">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    @endif
+                </div>
+
+                <a href="https://wa.me/5511999999999" class="btn btn-primary gap-2">
+                    <i class="fab fa-whatsapp"></i>
+                    (11) 99999-9999
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section class="relative py-30 bg-linear-to-t from-green-400 to-blue-400 ">
+        <div class="container mx-auto px-4 mt-18">
+            <div class="flex flex-col items-center gap-12">
+                <div class="text-center animate-fade-in" style="animation-delay: 0.1s">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                        {{-- Encontre o imóvel <span class="text-primary">perfeito</span> --}}
+                        {{ $heroSection['title'] ?? 'Encontre o imóvel perfeito' }}
+                    </h1>
+                    <p class="text-xl mb-8">
+                        Mais de 1.000 propriedades disponíveis com as melhores condições do mercado
+                    </p>
+                </div>
+
+                
+            </div>
+        </div>
+    </section>
+
+    <div class="container mx-auto px-4 -mt-12">
+        <div class="animate-fade-in" style="animation-delay: 0.1s">
+                    <div class="card bg-base-100 shadow-xl">
+                        <div class="card-body">
+                            <h2 class="card-title mb-4">O que você está buscando?</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                <select class="select select-bordered">
+                                    <option disabled selected>Tipo de Imóvel</option>
+                                    <option>Casa</option>
+                                    <option>Apartamento</option>
+                                    <option>Terreno</option>
+                                    <option>Comercial</option>
+                                </select>
+                                <select class="select select-bordered">
+                                    <option disabled selected>Localização</option>
+                                    <option>São Paulo</option>
+                                    <option>Rio de Janeiro</option>
+                                    <option>Belo Horizonte</option>
+                                </select>
+                                <select class="select select-bordered">
+                                    <option disabled selected>Faixa de Preço</option>
+                                    <option>Até R$ 300.000</option>
+                                    <option>R$ 300-600 mil</option>
+                                    <option>R$ 600-1 milhão</option>
+                                </select>
+                                <select class="select select-bordered">
+                                    <option disabled selected>Quartos</option>
+                                    <option>1+</option>
+                                    <option>2+</option>
+                                    <option>3+</option>
+                                </select>
+                                <button class="btn btn-primary w-full">
+                                    <i class="fas fa-search mr-2"></i> Buscar Imóveis
+                                </button>
+                            </div>
+                            {{-- <div class="card-actions justify-end mt-4">
+                            </div> --}}
+                        </div>
+                    </div>
+                </div>
+    </div>
+    
+    <section id="destaques" class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Imóveis em Destaque</h2>
+                <p class="text-lg max-w-2xl mx-auto">Confira nossas melhores opções selecionadas especialmente para
+                    você
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach ($featuredProperties as $property)
+                    <div class="property-card card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 animate-fade-in"
+                        style="animation-delay: 0.1s">
+                        <figure>
+                            <img src="{{ $property['image'] ?? 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}"
+                                alt="Casa moderna" class="h-64 w-full object-cover">
+                            <span class="badge badge-primary absolute top-4 right-4">Destaque</span>
+                        </figure>
+                        <div class="card-body">
+                            <h3 class="card-title">{{ $property['title'] }}</h3>
+                            <div class="flex items-center text-yellow-500 mb-2">
+                                <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
+                                <span>{{ $property['address'] }}</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-4">
+                                <div>
+                                    <i class="fas fa-bed mr-1"></i>
+                                    <span>{{ $property['bedrooms'] }} Quartos</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-bath mr-1"></i>
+                                    <span>{{ $property['bathrooms'] }} Banheiros</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-ruler-combined mr-1"></i>
+                                    <span>{{ $property['area'] }}m²</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-xl font-bold text-primary">R$
+                                    {{ number_format($property['price'], 0, ',', '.') }}</span>
+                                {{-- <a :href="route('home.property', $property['id'])" --}}
+                                <a class="btn btn-sm btn-secondary">Detalhes</a>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="text-center mt-8">
+                <a href="{{ route('demo.properties', ['type' => 'destaque']) }}"
+                    class="btn btn-outline btn-primary">Ver mais imóveis</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="sobre" class="py-16 bg-base-200">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col lg:flex-row items-center gap-12">
+                <div class="lg:w-1/2 animate-fade-in">
+                    <img src="{{ $aboutSection['image'] ?? 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}"
+                        alt="Destaque da imobiliária" class="rounded-lg shadow-xl w-full h-auto">
+                </div>
+                <div class="lg:w-1/2 animate-fade-in" style="animation-delay: 0.2s">
+                    <h2 class="text-3xl font-bold mb-6">{{ $aboutSection['title'] }}</h2>
+                    <p class="mb-4 text-lg">Somos uma imobiliária com mais de 20 anos de experiência no mercado,
+                        ajudando famílias a encontrar o lar perfeito.</p>
+                    <p class="mb-6">Nossa equipe de corretores altamente qualificados está pronta para oferecer o
+                        melhor
+                        atendimento e encontrar a solução ideal para suas necessidades imobiliárias.</p>
+
+                    <div class="space-y-4">
+                        @foreach ($aboutSection['features'] as $feature)
+                            <div class="flex items-start">
+                                <div class="text-primary mr-4 mt-1">
+                                    <i class="{{ $feature['icon'] ?? 'fas fa-check-circle' }} text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">{{ $feature['title'] }}</h4>
+                                    <p class="text-sm">{{ $feature['description'] }}</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <button class="btn btn-primary mt-8">Conheça nossa equipe</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="recentes" class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Imóveis Recentes</h2>
+                <p class="text-lg max-w-2xl mx-auto">Confira nossas últimas adições ao portfólio</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                @foreach ($recentProperties as $property)
+                    <div class="property-card card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300 animate-fade-in"
+                        style="animation-delay: 0.1s">
+                        <figure>
+                            <img src="{{ $property['image'] ?? 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}"
+                                alt="{{ $property['title'] }}" class="h-48 w-full object-cover">
+                            <span class="badge badge-secondary absolute top-4 right-4">Novo</span>
+                        </figure>
+                        <div class="card-body p-4">
+                            <h3 class="card-title text-lg">{{ $property['title'] }}</h3>
+                            <div class="flex items-center text-sm mb-2">
+                                <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
+                                <span>{{ $property['address'] }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm mb-3">
+                                @if ($property['bedrooms'] > 0)
+                                    {{-- Condição para exibir quartos apenas se for relevante --}}
+                                    <div>
+                                        <i class="fas fa-bed mr-1"></i>
+                                        <span>{{ $property['bedrooms'] }} Quartos</span>
+                                    </div>
+                                @endif
+                                @if ($property['bathrooms'] > 0)
+                                    {{-- Condição para exibir banheiros apenas se for relevante --}}
+                                    <div>
+                                        <i class="fas fa-bath mr-1"></i>
+                                        <span>{{ $property['bathrooms'] }}
+                                            Banheiro{{ $property['bathrooms'] > 1 ? 's' : '' }}</span>
+                                    </div>
+                                @endif
+                                <div>
+                                    <i class="fas fa-ruler-combined mr-1"></i>
+                                    <span>{{ $property['area'] }}m²</span>
+                                </div>
+                                @if ($property['type'] === 'terreno' && isset($property['vagas_garagem']))
+                                    {{-- Exemplo de campo específico para terreno --}}
+                                    <div>
+                                        <i class="fas fa-car mr-1"></i>
+                                        <span>{{ $property['vagas_garagem'] }} Vagas</span>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-primary">R$
+                                    {{ number_format($property['price'], 0, ',', '.') }}</span>
+                                {{-- <a href="{{ $property['details_link'] ?? route('home.property', $property['id']) }}" --}}
+                                <a class="btn btn-xs btn-outline btn-primary">Detalhes</a>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+                {{-- <div class="property-card card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300 animate-fade-in"
+                    style="animation-delay: 0.1s">
+                    <figure>
+                        <img src="https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+                            alt="Apartamento compacto" class="h-48 w-full object-cover">
+                        <span class="badge badge-secondary absolute top-4 right-4">Novo</span>
+                    </figure>
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-lg">Apartamento Compacto</h3>
+                        <div class="flex items-center text-sm mb-2">
+                            <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
+                            <span>Centro, Curitiba</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm mb-3">
+                            <div>
+                                <i class="fas fa-bed mr-1"></i>
+                                <span>2 Quartos</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-bath mr-1"></i>
+                                <span>1 Banheiro</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-ruler-combined mr-1"></i>
+                                <span>65m²</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-primary">R$ 320.000</span>
+                            <button class="btn btn-xs btn-outline btn-primary">Detalhes</button>
+                        </div>
+                    </div>
+                </div> --}}
+
+            </div>
+        </div>
+    </section>
+
+    <section class="relative py-20 bg-primary text-primary-content">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                {{-- Usamos {!! !!} aqui para renderizar o HTML dentro da string (o <span>) --}}
+                {!! $sectionContent['title'] !!}
+            </h1>
+            <p class="text-xl mb-12 max-w-3xl mx-auto">
+                {{ $sectionContent['description'] }}
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+                @foreach ($sectionContent['metrics'] as $metric)
+                    <div class="text-center">
+                        <div class="text-4xl font-bold mb-2">{{ $metric['value'] }}</div>
+                        <div class="opacity-80">{{ $metric['description'] }}</div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="mt-12 flex flex-col sm:flex-row justify-center gap-4">
+                <a href="{{ $sectionContent['button_properties_link'] }}" class="btn btn-secondary btn-lg">
+                    <i class="{{ $sectionContent['button_properties_icon'] }} mr-2"></i>
+                    {{ $sectionContent['button_properties_text'] }}
+                </a>
+                <a href="{{ $sectionContent['button_contact_link'] }}"
+                    class="btn btn-outline btn-lg btn-primary-content">
+                    <i class="{{ $sectionContent['button_contact_icon'] }} mr-2"></i>
+                    {{ $sectionContent['button_contact_text'] }}
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {{-- <section class="relative py-20 bg-primary text-primary-content">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                A melhor experiência em <span class="text-secondary">negócios imobiliários</span>
+            </h1>
+            <p class="text-xl mb-12 max-w-3xl mx-auto">
+                Conectamos você aos melhores imóveis com transparência e segurança
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+                <div class="text-center">
+                    <div class="text-4xl font-bold mb-2">1.200+</div>
+                    <div class="opacity-80">Imóveis disponíveis</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold mb-2">25+</div>
+                    <div class="opacity-80">Bairros atendidos</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold mb-2">98%</div>
+                    <div class="opacity-80">Satisfação dos clientes</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-4xl font-bold mb-2">15+</div>
+                    <div class="opacity-80">Anos de experiência</div>
+                </div>
+            </div>
+
+            <div class="mt-12 flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#destaques" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-home mr-2"></i> Ver Imóveis
+                </a>
+                <a href="#contato" class="btn btn-outline btn-lg btn-primary-content">
+                    <i class="fas fa-phone-alt mr-2"></i> Falar com Corretor
+                </a>
+            </div>
+        </div>
+    </section> --}}
+
+    {{-- <section id="contato" class="py-16 bg-primary text-primary-content">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-4">Pronto para encontrar seu imóvel ideal?</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">Nossa equipe está pronta para te ajudar em todas as etapas do
+                processo.</p>
+
+            <div class="flex flex-col md:flex-row justify-center gap-4 max-w-2xl mx-auto">
+                <a href="tel:+5511999999999" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-phone-alt mr-2"></i>
+                    (11) 99999-9999
+                </a>
+                <a href="mailto:contato@imobiliaria.com" class="btn btn-accent btn-lg">
+                    <i class="fas fa-envelope mr-2"></i>
+                    Enviar Mensagem
+                </a>
+            </div>
+        </div>
+    </section> --}}
+
+    <footer class="footer p-10 bg-neutral text-neutral-content">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <span class="footer-title">Imobiliária</span>
+                    <p>Há mais de 20 anos ajudando pessoas a encontrar seu lar ideal.</p>
+                    <div class="flex gap-4 mt-4">
+                        @if ($contactInfo['social_media']['facebook'])
+                            <a href="{{ $contactInfo['social_media']['facebook'] }}"
+                                class="btn btn-circle btn-sm btn-ghost">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                        @endif
+                        @if ($contactInfo['social_media']['instagram'])
+                            <a href="{{ $contactInfo['social_media']['instagram'] }}"
+                                class="btn btn-circle btn-sm btn-ghost">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        @endif
+                        @if ($contactInfo['social_media']['linkedin'])
+                            <a href="{{ $contactInfo['social_media']['linkedin'] }}"
+                                class="btn btn-circle btn-sm btn-ghost">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+                <div>
+                    <span class="footer-title">Links Rápidos</span>
+                    <ul>
+                        <li><a href="#destaques" class="link link-hover">Imóveis em Destaque</a></li>
+                        <li><a href="#recentes" class="link link-hover">Imóveis Recentes</a></li>
+                        <li><a href="#sobre" class="link link-hover">Sobre Nós</a></li>
+                        <li><a href="#contato" class="link link-hover">Contato</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <span class="footer-title">Contato</span>
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-map-marker-alt mr-2"></i>
+                        <span>{{ $contactInfo['address'] }}</span>
+                    </div>
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-phone-alt mr-2"></i>
+                        <span>{{ $contactInfo['phone'] }}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-envelope mr-2"></i>
+                        <span>{{ $contactInfo['email'] }}</span>
+                    </div>
+                </div>
+
+                {{-- <div>
+                    <span class="footer-title">Newsletter</span>
+                    <p>Assine nossa newsletter para receber novidades</p>
+                    <div class="form-control mt-4">
+                        <div class="relative">
+                            <input type="text" placeholder="seu@email.com"
+                                class="input input-bordered w-full pr-16">
+                            <button class="btn btn-primary absolute top-0 right-0 rounded-l-none">Assinar</button>
+                        </div>
+                    </div>
+                </div> --}}
+            </div>
+
+            <div class="border-t w-full border-gray-700 mt-8 pt-8 text-center">
+                <p>&copy; {{ date('Y') }} {{ $siteSettings['site_name'] }}. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+
+    <div x-data="{ open: false }" class="fixed bottom-6 right-6 z-50">
+        <button @click="open = !open" class="btn btn-circle bg-green-500 text-white btn-xl shadow-xl relative">
+            <i class="fab fa-whatsapp text-2xl"></i>
+            <span x-show="!open"
+                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+        </button>
+
+        <div x-show="open" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 translate-y-4"
+            class="absolute right-16 bottom-0 w-72 bg-white rounded-lg shadow-xl overflow-hidden">
+
+            <div class="bg-green-500 text-white p-4">
+                <h3 class="font-bold">Atendimento Online</h3>
+                <p class="text-xs">Normalmente respondemos em minutos</p>
+            </div>
+
+            <div class="p-4 text-sm">
+                <p>Olá! Como podemos ajudar?</p>
+            </div>
+
+            <div class="p-4 border-t">
+                <a href="https://wa.me/5511999999999" class="btn bg-green-500 text-white btn-block btn-sm">
+                    <i class="fab fa-whatsapp mr-2"></i> Iniciar Conversa
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('properties', {
+                featured: [{
+                        id: 1,
+                        title: 'Casa Moderna no Centro',
+                        location: 'Centro, São Paulo',
+                        bedrooms: 3,
+                        bathrooms: 2,
+                        area: 180,
+                        price: 850000,
+                        image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                        featured: true
+                    },
+                    // Outros imóveis...
+                ],
+
+                recent: [{
+                        id: 4,
+                        title: 'Apartamento Compacto',
+                        location: 'Centro, Curitiba',
+                        bedrooms: 2,
+                        bathrooms: 1,
+                        area: 65,
+                        price: 320000,
+                        image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                        new: true
+                    },
+                    // Outros imóveis recentes...
+                ]
+            });
+        });
+
+        // Observador de interseção para animações
+        const animateOnScroll = () => {
+            const elements = document.querySelectorAll('.animate-fade-in');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = 1;
+                        entry.target.style.transform = 'translateY(0)';
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            elements.forEach(el => {
+                el.style.opacity = 0;
+                el.style.transform = 'translateY(20px)';
+                observer.observe(el);
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', animateOnScroll);
+    </script>
+</body>
+
+</html>

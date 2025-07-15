@@ -9,13 +9,6 @@ use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-
-    /**
-     * Display the landing page view.
-     *
-     * @return \Illuminate\Contracts\View\View
-     */
-
     public function landing()
     {
         return view('home.landing');

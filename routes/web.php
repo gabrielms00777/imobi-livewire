@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DemoController;
 use App\Http\Controllers\HomeController;
 use App\Livewire\Admin\Dashboard;
 use App\Livewire\Admin\User;
@@ -33,7 +34,10 @@ Route::middleware('auth')->name('admin.')->prefix('admin')->group(function () {
     // Route::get('/site-settings', \App\Livewire\Admin\SiteSettings::class)->name('site-settings');
 });
 
-Route::get('/demo', [HomeController::class, 'demo'])->name('home.demo');
+// Route::get('/demo', [HomeController::class, 'demo'])->name('home.demo');
+Route::get('/demo', [DemoController::class, 'home'])->name('demo.home');
+Route::get('/demo/imoveis', [DemoController::class, 'properties'])->name('demo.properties');
+
 Route::prefix('{tenantSlug}')
     ->middleware(['web', 'set.tenant'])
     ->group(function () {
