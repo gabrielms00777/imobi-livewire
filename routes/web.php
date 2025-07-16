@@ -10,6 +10,7 @@ use App\Livewire\Auth\Register;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Admin\TenantSettings\Index as TenantSettingsIndex;
 use App\Livewire\Tenant\Properties\Index;
+use Illuminate\Support\Facades\Auth;
 
 // auth()->logout();
 
@@ -19,6 +20,13 @@ Route::view('/teste1', 'welcome');
 
 Route::get('/login', Login::class)->name('login');
 Route::get('/register', Register::class)->name('register');
+Route::get('/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+ 
+    return redirect('/');
+})->name('logout');
 
 Route::middleware('auth')->name('admin.')->prefix('admin')->group(function () {
     Route::get('/', Dashboard::class)->name('dashboard');
@@ -31,26 +39,20 @@ Route::middleware('auth')->name('admin.')->prefix('admin')->group(function () {
 
     Route::get('/site-settings', TenantSettingsIndex::class)->name('tenant-settings.index');
 
-    // Route::get('/site-settings', \App\Livewire\Admin\SiteSettings::class)->name('site-settings');
 });
 
-// Route::get('/demo', [HomeController::class, 'demo'])->name('home.demo');
 Route::get('/demo', [DemoController::class, 'home'])->name('demo.home');
 Route::get('/demo/imoveis', [DemoController::class, 'properties'])->name('demo.properties');
+Route::get('/demo/imoveis/{id}', [DemoController::class, 'property'])->name('demo.property');
 
 Route::prefix('{tenantSlug}')
     ->middleware(['web', 'set.tenant'])
     ->group(function () {
         Route::get('/', [HomeController::class, 'index'])->name('tenant.home');
         Route::get('/imoveis', [HomeController::class, 'properties'])->name('tenant.properties');
-        // Route::get('/imoveis/{id}', Index::class)->name('tenant.property');
         Route::get('/imoveis/{id}', [HomeController::class, 'property'])->name('tenant.property');
-    });
+});
 
-// Opcional: Rota para o site principal da plataforma (se você tiver um)
-Route::get('/', [HomeController::class, 'landing'])->name('platform.home');
+Route::view('/', 'home.landing')->name('platform.home');
 
-// Route::get('/', [HomeController::class, 'landing'])->name('home.landing');
-// Route::get('/imoveis', [HomeController::class, 'properties'])->name('home.properties');
-Route::get('/imovel/{id}', [HomeController::class, 'property'])->name('home.property');
 

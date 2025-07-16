@@ -59,7 +59,7 @@ class TenantSettingSeeder extends Seeder
                 ]),
 
                 // Metrics/Engagement Section
-                'engagement_title' => 'Resultados que <span class="text-secondary">inspiram confiança</span>',
+                'engagement_title' => 'Resultados que inspiram confiança',
                 'engagement_description' => 'Construindo o futuro com base em números sólidos.',
                 'engagement_metrics' => json_encode([
                     ['value' => '500+', 'description' => 'Imóveis exclusivos'],
@@ -81,7 +81,7 @@ class TenantSettingSeeder extends Seeder
                 'hero_image_alt_text' => 'Mansão de luxo',
                 'hero_image_class' => 'absolute inset-0 w-full h-full object-cover z-0 opacity-80',
                 'hero_show_text_content' => true,
-                'hero_title' => 'Sua mansão <span class="text-secondary">espera por você</span>',
+                'hero_title' => 'Sua mansão espera por você',
                 'hero_description' => 'As propriedades mais exclusivas e sofisticadas do mercado estão aqui.',
                 'hero_clients_satisfied_text' => '+50 clientes de alto padrão',
                 'hero_avatars' => json_encode([
@@ -143,7 +143,7 @@ class TenantSettingSeeder extends Seeder
                 ]),
 
                 // Metrics/Engagement Section
-                'engagement_title' => 'Sua busca termina <span class="text-secondary">aqui</span>',
+                'engagement_title' => 'Sua busca termina aqui',
                 'engagement_description' => 'Realizamos sonhos através de imóveis com dedicação e profissionalismo.',
                 'engagement_metrics' => json_encode([
                     ['value' => '200+', 'description' => 'Imóveis vendidos'],
@@ -165,7 +165,7 @@ class TenantSettingSeeder extends Seeder
                 'hero_image_alt_text' => null,
                 'hero_image_class' => null,
                 'hero_show_text_content' => true,
-                'hero_title' => 'Seu novo lar <span class="text-secondary">está aqui</span>',
+                'hero_title' => 'Seu novo lar está aqui',
                 'hero_description' => 'As melhores casas e apartamentos em Curitiba, escolhidos a dedo para você.',
                 'hero_clients_satisfied_text' => '+70 clientes satisfeitos em Curitiba',
                 'hero_avatars' => json_encode([
@@ -228,7 +228,7 @@ class TenantSettingSeeder extends Seeder
                 ]),
 
                 // Metrics/Engagement Section
-                'engagement_title' => 'Concretizando <span class="text-secondary">Seus Sonhos à Beira-Mar</span>',
+                'engagement_title' => 'Concretizando Seus Sonhos à Beira-Mar',
                 'engagement_description' => 'Veja por que somos a escolha número um para imóveis no litoral.',
                 'engagement_metrics' => json_encode([
                     ['value' => '300+', 'description' => 'Propriedades Vendidas'],
@@ -250,8 +250,8 @@ class TenantSettingSeeder extends Seeder
                 'hero_image_url' => 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8Y2FzYXxlbnwwfHwwfHx8MA%3D%3D', // Imagem de praia/mansão
                 'hero_image_alt_text' => 'Casa de praia luxuosa',
                 'hero_image_class' => 'absolute inset-0 w-full h-full object-cover z-0 opacity-80',
-                'hero_show_text_content' => true,
-                'hero_title' => 'Sua Vida de Praia <span class="text-secondary">Começa Aqui</span>',
+                'hero_show_text_content' => false,
+                'hero_title' => 'Sua Vida de Praia Começa Aqui',
                 'hero_description' => 'Explore o melhor do litoral com nossas propriedades exclusivas.',
                 'hero_clients_satisfied_text' => 'Mais de 100 famílias felizes',
                 'hero_avatars' => json_encode([

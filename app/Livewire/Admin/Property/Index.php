@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Property;
 
 use App\Models\Property;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Mary\Traits\Toast;
@@ -54,8 +55,11 @@ class Index extends Component
 
     public function properties()
     {
-        return Property::query()
+        $user = Auth::user();
+        if($user->slug){
+            return Property::query()
             ->with('media')
+            ->where('user_id', $user->id)
             ->when($this->search, function ($query) {
                 $query->where('title', 'like', "%{$this->search}%")
                       ->orWhere('description', 'like', "%{$this->search}%");
@@ -68,10 +72,28 @@ class Index extends Component
             ->when($this->price_max, fn($query) => $query->where('price', '<=', $this->price_max))
             ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
             ->paginate(10);
+        } elseif($user->company_id){
+            return Property::query()
+                ->with('media')
+                ->where('company_id', $user->company_id)
+                ->when($this->search, function ($query) {
+                    $query->where('title', 'like', "%{$this->search}%")
+                          ->orWhere('description', 'like', "%{$this->search}%");
+                })
+                ->when($this->status, fn($query) => $query->where('status', $this->status))
+                ->when($this->type, fn($query) => $query->where('type', $this->type))
+                ->when($this->bedrooms, fn($query) => $query->where('bedrooms', '>=', $this->bedrooms))
+                ->when($this->bathrooms, fn($query) => $query->where('bathrooms', '>=', $this->bathrooms))
+                ->when($this->price_min, fn($query) => $query->where('price', '>=', $this->price_min))
+                ->when($this->price_max, fn($query) => $query->where('price', '<=', $this->price_max))
+                ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
+                ->paginate(10);
+        }
     }
     
     public function render()
     {
+        // dd($this->properties());
         return view('livewire.admin.property.index', [
             'properties' => $this->properties(),
             'headers' => $this->headers()

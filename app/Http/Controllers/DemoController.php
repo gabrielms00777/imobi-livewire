@@ -820,4 +820,9 @@ class DemoController extends Controller
             'contactInfo' => $contactInfo,
         ]);
     }
+
+    public function property(Request $request, $id)
+    {
+        return view('demo.property');
+    }
 }

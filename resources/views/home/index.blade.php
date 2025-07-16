@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-{{-- <html lang="pt-BR" x-data="{ darkMode: false }" :class="{ 'dark': darkMode }"> --}}
 <html lang="pt-BR" x-data="{ darkMode: false }" :class="{ 'dark': darkMode }">
 
 <head>
@@ -69,14 +68,14 @@
 
 <body class="bg-base-100 text-neutral">
 
-    <header x-data="{ isScrolled: false }" @scroll.window="isScrolled = window.scrollY > 50"
+    <header x-data="{ isScrolled: false }" @scroll.window="isScrolled = window.scrollY > 300"
         class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
         :class="isScrolled ? 'bg-white shadow-md dark:bg-neutral' : 'bg-transparent'">
 
         <div class="container mx-auto px-4">
             <div class="navbar">
                 <div class="flex-1">
-                    <a href="{{route('tenant.home', ['tenantSlug' => $tenant->slug])}}" class="px-0">
+                    <a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug]) }}" class="px-0">
                         <div class="flex items-center">
                             @if ($tenantSettings->logo && $tenantSettings->show_logo_and_name)
                                 <img src="{{ $tenantSettings->logo }}" alt="Logo {{ $tenantSettings->site_name }}"
@@ -109,7 +108,7 @@
                 </div>
 
                 <div class="flex-none hidden lg:flex items-center gap-2">
-                    <nav class="flex items-center">
+                    {{-- <nav class="flex items-center">
                         <ul class="menu menu-horizontal px-1 gap-1">
                             <li><a href="#" class="font-medium hover:text-primary">Início</a></li>
                             <li><a href="#destaques" class="font-medium hover:text-primary">Destaques</a></li>
@@ -123,7 +122,7 @@
                         </ul>
                     </nav>
 
-                    <div class="divider divider-horizontal h-6 mx-2"></div>
+                    <div class="divider divider-horizontal h-6 mx-2"></div> --}}
 
                     <div class="flex items-center gap-2 mr-4">
                         @if ($tenantSettings->social_facebook)
@@ -215,24 +214,22 @@
 
     <section
         class="relative py-20 @if ($tenantSettings->hero_background_type === 'gradient') bg-linear-{{ $tenantSettings->hero_gradient_direction }} from-[{{ $tenantSettings->hero_gradient_from_color }}] to-[{{ $tenantSettings->hero_gradient_to_color }}] @else overflow-hidden @endif">
-        {{-- Condicional para exibir imagem de fundo --}}
         @if ($tenantSettings->hero_background_type === 'image')
             <img src="{{ $tenantSettings->hero_image_url }}" alt="{{ $tenantSettings->hero_image_alt_text }}"
                 class="{{ $tenantSettings->hero_image_class }}">
         @endif
 
-        <div class="container mx-auto px-4 mt-18 relative z-10"> {{-- Adicionado relative z-10 para garantir que o conteúdo fique acima da imagem --}}
-            <div class="flex flex-col lg:flex-row items-center gap-12">
-                {{-- Conteúdo textual e avatares (condicional) --}}
+        <div class="container mx-auto px-4 mt-18 relative z-10">
+            <div class="flex flex-col h-50 items-center gap-12">
                 @if ($tenantSettings->hero_show_text_content)
-                    <div class="lg:w-1/2"> {{-- Adicionei text-primary-content para herdar a cor do texto --}}
+                    <div class="text-center animate-fade-in" style="animation-delay: 0.1s">
                         <h1 class="text-4xl md:text-5xl font-bold mb-6">
-                            {!! $tenantSettings->hero_title !!}
+                            {{ $tenantSettings->hero_title }}
                         </h1>
                         <p class="text-xl mb-8">
                             {{ $tenantSettings->hero_description }}
                         </p>
-                        <div class="flex items-center gap-4">
+                        {{-- <div class="flex items-center gap-4">
                             <div class="flex -space-x-2">
                                 @foreach (json_decode($tenantSettings->hero_avatars) as $avatarUrl)
                                     <div class="avatar">
@@ -245,26 +242,23 @@
                             <div>
                                 <div class="font-bold">{{ $tenantSettings->hero_clients_satisfied_text }}</div>
                                 <div class="flex text-yellow-400">
-                                    {{-- Loop para estrelas cheias --}}
                                     @for ($i = 0; $i < floor($tenantSettings->hero_stars_rating); $i++)
                                         <i class="fas fa-star"></i>
                                     @endfor
-                                    {{-- Estrela pela metade, se houver --}}
                                     @if ($tenantSettings->stars_rating - floor($tenantSettings->hero_stars_rating) >= 0.5)
                                         <i class="fas fa-star-half-alt"></i>
                                     @endif
-                                    {{-- Estrelas vazias para completar 5, se desejar --}}
                                     @for ($i = 0; $i < 5 - ceil($tenantSettings->hero_stars_rating); $i++)
-                                        <i class="far fa-star"></i> {{-- 'far' para estrela vazia --}}
+                                        <i class="far fa-star"></i> 
                                     @endfor
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 @endif
 
                 {{-- Formulário de busca (sempre visível, mas pode ser condicional se quiser) --}}
-                <div class="lg:w-1/2 w-full">
+                {{-- <div class="lg:w-1/2 w-full">
                     <div class="card bg-base-100 shadow-xl">
                         <div class="card-body">
                             <h2 class="card-title mb-4">{{ $tenantSettings->hero_form_title }}</h2>
@@ -286,10 +280,52 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
             </div>
         </div>
     </section>
+
+    <div class="container mx-auto px-4 -mt-12">
+        <div class="animate-fade-in" style="animation-delay: 0.1s">
+            <div class="card bg-base-100 shadow-xl">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">O que você está buscando?</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <select class="select select-bordered">
+                            <option disabled selected>Tipo de Imóvel</option>
+                            <option>Casa</option>
+                            <option>Apartamento</option>
+                            <option>Terreno</option>
+                            <option>Comercial</option>
+                        </select>
+                        <select class="select select-bordered">
+                            <option disabled selected>Localização</option>
+                            <option>São Paulo</option>
+                            <option>Rio de Janeiro</option>
+                            <option>Belo Horizonte</option>
+                        </select>
+                        <select class="select select-bordered">
+                            <option disabled selected>Faixa de Preço</option>
+                            <option>Até R$ 300.000</option>
+                            <option>R$ 300-600 mil</option>
+                            <option>R$ 600-1 milhão</option>
+                        </select>
+                        <select class="select select-bordered">
+                            <option disabled selected>Quartos</option>
+                            <option>1+</option>
+                            <option>2+</option>
+                            <option>3+</option>
+                        </select>
+                        <button class="btn btn-primary w-full">
+                            <i class="fas fa-search mr-2"></i> Buscar Imóveis
+                        </button>
+                    </div>
+                    {{-- <div class="card-actions justify-end mt-4">
+                            </div> --}}
+                </div>
+            </div>
+        </div>
+    </div>
 
     <section id="destaques" class="py-16">
         <div class="container mx-auto px-4">
@@ -305,7 +341,8 @@
                     <div class="property-card card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 animate-fade-in"
                         style="animation-delay: 0.1s">
                         <figure>
-                            <img src="{{ $property->main_image_url }}" alt="Casa moderna" class="h-64 w-full object-cover">
+                            <img src="{{ $property->main_image_url }}" alt="Casa moderna"
+                                class="h-64 w-full object-cover">
                             <span class="badge badge-primary absolute top-4 right-4">Destaque</span>
                         </figure>
                         <div class="card-body">
@@ -402,26 +439,27 @@
         <div class="container mx-auto px-4">
             <div class="flex flex-col lg:flex-row items-center gap-12">
                 <div class="lg:w-1/2 animate-fade-in">
-                    <img src="{{ $tenantSettings->about_image ?? 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}"
+                    <img src="{{ asset($tenantSettings->about_image) ?? 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}"
                         alt="Destaque da imobiliária" class="rounded-lg shadow-xl w-full h-auto">
                 </div>
                 <div class="lg:w-1/2 animate-fade-in" style="animation-delay: 0.2s">
                     <h2 class="text-3xl font-bold mb-6">{{ $tenantSettings->about_title }}</h2>
-                    <p class="mb-4 text-lg">Somos uma imobiliária com mais de 20 anos de experiência no mercado,
+                    <p class="mb-4 text-lg">{{ $tenantSettings->about_content }}</p>
+                    {{-- <p class="mb-4 text-lg">Somos uma imobiliária com mais de 20 anos de experiência no mercado,
                         ajudando famílias a encontrar o lar perfeito.</p>
                     <p class="mb-6">Nossa equipe de corretores altamente qualificados está pronta para oferecer o
                         melhor
-                        atendimento e encontrar a solução ideal para suas necessidades imobiliárias.</p>
+                        atendimento e encontrar a solução ideal para suas necessidades imobiliárias.</p> --}}
 
                     <div class="space-y-4">
-                        @foreach (json_decode($tenantSettings->about_features) as $feature)
+                        @foreach ($tenantSettings->about_features as $feature)
                             <div class="flex items-start">
                                 <div class="text-primary mr-4 mt-1">
-                                    <i class="{{ $feature->icon ?? 'fas fa-check-circle' }} text-2xl"></i>
+                                    <i class="{{ $feature['icon'] ?? 'fas fa-check-circle' }} text-2xl"></i>
                                 </div>
                                 <div>
-                                    <h4 class="font-bold">{{ $feature->title }}</h4>
-                                    <p class="text-sm">{{ $feature->description }}</p>
+                                    <h4 class="font-bold">{{ $feature['title'] }}</h4>
+                                    <p class="text-sm">{{ $feature['description'] }}</p>
                                 </div>
                             </div>
                         @endforeach
@@ -486,7 +524,7 @@
                             <div class="flex justify-between items-center">
                                 <span class="font-bold text-primary">R$
                                     {{ number_format($property->price, 0, ',', '.') }}</span>
-                                <a href="{{ $property->details_link ?? route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}"
+                                <a href="{{ route('tenant.property', ['tenantSlug' => $tenant->slug, 'id' => $property->id]) }}"
                                     class="btn btn-xs btn-outline btn-primary">Detalhes</a>
                             </div>
                         </div>
@@ -499,18 +537,18 @@
     <section class="relative py-20 bg-primary text-primary-content">
         <div class="container mx-auto px-4 text-center">
             <h1 class="text-4xl md:text-5xl font-bold mb-6">
-                {{-- Usamos {!! !!} aqui para renderizar o HTML dentro da string (o <span>) --}}
-                {!! $tenantSettings->engagement_title !!}
+                {{ $tenantSettings->engagement_title }}
             </h1>
             <p class="text-xl mb-12 max-w-3xl mx-auto">
                 {{ $tenantSettings->engagement_description }}
             </p>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
-                @foreach (json_decode($tenantSettings->engagement_metrics) as $metric)
+            {{-- <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto"> --}}
+            <div class="flex flex-col md:flex-row justify-center gap-8 max-w-5xl mx-auto">
+                @foreach ($tenantSettings->engagement_metrics as $metric)
                     <div class="text-center">
-                        <div class="text-4xl font-bold mb-2">{{ $metric->value }}</div>
-                        <div class="opacity-80">{{ $metric->description }}</div>
+                        <div class="text-4xl font-bold mb-2">{{ $metric['value'] }}</div>
+                        <div class="opacity-80">{{ $metric['description'] }}</div>
                     </div>
                 @endforeach
             </div>
