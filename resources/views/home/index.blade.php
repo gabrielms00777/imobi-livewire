@@ -4,25 +4,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imobiliária - Encontre seu imóvel dos sonhos</title>
-    <meta name="description"
-        content="Encontre o imóvel perfeito para você com a nossa imobiliária. Temos apartamentos, casas, terrenos e mais.">
 
+    {{-- SEO: Título da Página --}}
+    {{-- Prioriza meta_title, depois site_name com sufixo, senão um padrão --}}
+    <title>{{ $tenantSettings->meta_title ?? ($tenantSettings->site_name ? $tenantSettings->site_name . ' - Encontre seu imóvel dos sonhos' : 'Sua Imobiliária - Encontre seu imóvel dos sonhos') }}</title>
 
-    <!-- Tailwind CSS + DaisyUI -->
-    {{-- @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-    @else --}}
+    {{-- SEO: Meta Descrição --}}
+    {{-- Prioriza meta_description, depois site_description, senão um padrão --}}
+    <meta name="description" content="{{ $tenantSettings->meta_description ?? $tenantSettings->site_description ?? 'Encontre o imóvel perfeito para você com a nossa imobiliária. Temos apartamentos, casas, terrenos e mais.' }}">
+
+    {{-- SEO: Meta Keywords --}}
+    @if ($tenantSettings->meta_keywords)
+        <meta name="keywords" content="{{ $tenantSettings->meta_keywords }}">
+    @endif
+
+    {{-- SEO: Favicon --}}
+    {{-- O site_favicon guarda o caminho do arquivo, então usamos Storage::url() --}}
+    @if ($tenantSettings->site_favicon)
+        <link rel="icon" href="{{ Storage::url($tenantSettings->site_favicon) }}" type="image/x-icon">
+    @endif
+
+    {{-- Open Graph Meta Tags (para compartilhamento em redes sociais como Facebook, LinkedIn) --}}
+    <meta property="og:title" content="{{ $tenantSettings->meta_title ?? ($tenantSettings->site_name ? $tenantSettings->site_name . ' - Encontre seu imóvel dos sonhos' : 'Sua Imobiliária - Encontre seu imóvel dos sonhos') }}">
+    <meta property="og:description" content="{{ $tenantSettings->meta_description ?? $tenantSettings->site_description ?? 'Encontre o imóvel perfeito para você com a nossa imobiliária. Temos apartamentos, casas, terrenos e mais.' }}">
+    {{-- A meta_image guarda o caminho do arquivo, então usamos Storage::url() --}}
+    @if ($tenantSettings->meta_image)
+        <meta property="og:image" content="{{ Storage::url($tenantSettings->meta_image) }}">
+    @endif
+    <meta property="og:url" content="{{ url()->current() }}"> {{-- URL canônica da página atual --}}
+    <meta property="og:type" content="website"> {{-- Tipo de conteúdo --}}
+
+    {{-- Twitter Card Meta Tags (para compartilhamento no Twitter/X) --}}
+    <meta name="twitter:card" content="summary_large_image"> {{-- Tipo de card, 'summary_large_image' é comum para imagens --}}
+    <meta name="twitter:title" content="{{ $tenantSettings->meta_title ?? ($tenantSettings->site_name ? $tenantSettings->site_name . ' - Encontre seu imóvel dos sonhos' : 'Sua Imobiliária - Encontre seu imóvel dos sonhos') }}">
+    <meta name="twitter:description" content="{{ $tenantSettings->meta_description ?? $tenantSettings->site_description ?? 'Encontre o imóvel perfeito para você com a nossa imobiliária. Temos apartamentos, casas, terrenos e mais.' }}">
+    {{-- A meta_image guarda o caminho do arquivo, então usamos Storage::url() --}}
+    @if ($tenantSettings->meta_image)
+        <meta name="twitter:image" content="{{ Storage::url($tenantSettings->meta_image) }}">
+    @endif
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    {{-- O script @tailwindcss/browser é mais para desenvolvimento. Em produção, geralmente o Tailwind é compilado. --}}
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
-    <!-- Alpine JS -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
 
@@ -30,7 +59,7 @@
         :root {
             --color-primary: {{ $tenantSettings->primary_color ?? '#3b82f6' }};
             --color-secondary: {{ $tenantSettings->secondary_color ?? '#f63b3b' }};
-            --color-neutral: {{ $tenantSettings->text_color }};
+            --color-neutral: {{ $tenantSettings->text_color ?? '#333333' }}; /* Adicionado fallback para text_color */
         }
 
         body {
@@ -77,29 +106,33 @@
                 <div class="flex-1">
                     <a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug]) }}" class="px-0">
                         <div class="flex items-center">
-                            @if ($tenantSettings->logo && $tenantSettings->show_logo_and_name)
-                                <img src="{{ $tenantSettings->logo }}" alt="Logo {{ $tenantSettings->site_name }}"
+                            @if ($tenantSettings->site_logo && $tenantSettings->header_display_type == 'logo_and_name')
+                                <img src="{{ $tenantSettings->site_logo }}" alt="Logo {{ $tenantSettings->site_name }}"
                                     class="h-8 w-auto mr-2 rounded-lg">
                                 @php
-                                    $names = explode(' ', $tenantSettings->site_name);
+                                    $words = explode(' ', $tenantSettings->site_name); // Divide o nome em um array de palavras
+                                    $firstWord = array_shift($words); // Pega a primeira palavra e a remove do array
+                                    $remainingWords = implode(' ', $words); // Junta as palavras restantes de volta em uma string
                                 @endphp
-                                <span class="text-xl font-bold text-primary">{{ $names[0] ?? '' }}
-                                    @if (isset($names[1]))
-                                        <span class="text-secondary">{{ $names[1] }}</span>
-                                    @endif
-                                </span>
-                            @elseif ($tenantSettings->logo)
-                                <img src="{{ $tenantSettings->logo }}" alt="Logo {{ $tenantSettings->site_name }}"
+                                <span class="text-xl font-bold text-primary">{{ $firstWord ?? '' }}</span>
+                                @if (!empty($remainingWords))
+                                    {{-- Se houver palavras restantes, exibe-as em secondary --}}
+                                    <span class="text-xl font-bold text-secondary">{{ $remainingWords }}</span>
+                                @endif
+                            @elseif ($tenantSettings->site_logo && $tenantSettings->header_display_type == 'logo_only')
+                                <img src="{{ $tenantSettings->site_logo }}" alt="Logo {{ $tenantSettings->site_name }}"
                                     class="h-10 w-auto rounded-lg">
-                            @elseif ($tenantSettings->site_name)
+                            @elseif ($tenantSettings->site_name && $tenantSettings->header_display_type == 'name_only')
                                 @php
-                                    $names = explode(' ', $tenantSettings->site_name);
+                                    $words = explode(' ', $tenantSettings->site_name); // Divide o nome em um array de palavras
+                                    $firstWord = array_shift($words); // Pega a primeira palavra e a remove do array
+                                    $remainingWords = implode(' ', $words); // Junta as palavras restantes de volta em uma string
                                 @endphp
-                                <span class="text-xl font-bold text-primary">{{ $names[0] ?? '' }}
-                                    @if (isset($names[1]))
-                                        <span class="text-secondary">{{ $names[1] }}</span>
-                                    @endif
-                                </span>
+                                <span class="text-xl font-bold text-primary">{{ $firstWord ?? '' }}</span>
+                                @if (!empty($remainingWords))
+                                    {{-- Se houver palavras restantes, exibe-as em secondary --}}
+                                    <span class="text-xl font-bold text-secondary">{{ $remainingWords }}</span>
+                                @endif
                             @else
                                 <span class="text-xl font-bold text-primary">Seu Site</span>
                             @endif
@@ -141,6 +174,12 @@
                             <a href="{{ $tenantSettings->social_linkedin }}"
                                 class="btn btn-ghost btn-circle btn-sm hover:text-primary">
                                 <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        @endif
+                        @if ($tenantSettings->social_youtube)
+                            <a href="{{ $tenantSettings->social_youtube }}"
+                                class="btn btn-ghost btn-circle btn-sm hover:text-primary">
+                                <i class="fab fa-youtube"></i>
                             </a>
                         @endif
                     </div>
@@ -215,6 +254,33 @@
     <section
         class="relative py-20 @if ($tenantSettings->hero_background_type === 'gradient') bg-linear-{{ $tenantSettings->hero_gradient_direction }} from-[{{ $tenantSettings->hero_gradient_from_color }}] to-[{{ $tenantSettings->hero_gradient_to_color }}] @else overflow-hidden @endif">
         @if ($tenantSettings->hero_background_type === 'image')
+            {{-- A propriedade 'hero_image' agora contém a URL da imagem salva no banco de dados. --}}
+            {{-- A classe `absolute inset-0 w-full h-full object-cover z-0` é um estilo comum para imagens de fundo. --}}
+            <img src="{{ $tenantSettings->hero_image_url }}" alt="Imagem de fundo do hero"
+                class="absolute inset-0 w-full h-full object-cover z-0">
+        @endif
+
+        <div class="container mx-auto px-4 mt-18 relative z-10">
+            <div class="flex flex-col h-50 items-center gap-12">
+                {{-- Adicionado '?? true' para 'hero_show_text_content' caso não esteja definido no modelo --}}
+                @if ($tenantSettings->hero_show_text_content ?? true)
+                    <div class="text-center animate-fade-in" style="animation-delay: 0.1s">
+                        <h1 class="text-4xl md:text-5xl font-bold mb-6">
+                            {{ $tenantSettings->hero_title }}
+                        </h1>
+                        <p class="text-xl mb-8">
+                            {{-- CORREÇÃO: Usando 'hero_subtitle' que é a propriedade definida no formulário --}}
+                            {{ $tenantSettings->hero_description }}
+                        </p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </section>
+
+    {{-- <section
+        class="relative py-20 @if ($tenantSettings->hero_background_type === 'gradient') bg-linear-{{ $tenantSettings->hero_gradient_direction }} from-[{{ $tenantSettings->hero_gradient_from_color }}] to-[{{ $tenantSettings->hero_gradient_to_color }}] @else overflow-hidden @endif">
+        @if ($tenantSettings->hero_background_type === 'image')
             <img src="{{ $tenantSettings->hero_image_url }}" alt="{{ $tenantSettings->hero_image_alt_text }}"
                 class="{{ $tenantSettings->hero_image_class }}">
         @endif
@@ -229,61 +295,60 @@
                         <p class="text-xl mb-8">
                             {{ $tenantSettings->hero_description }}
                         </p>
-                        {{-- <div class="flex items-center gap-4">
-                            <div class="flex -space-x-2">
-                                @foreach (json_decode($tenantSettings->hero_avatars) as $avatarUrl)
-                                    <div class="avatar">
-                                        <div class="w-12 h-12 rounded-full border-2 border-base-100">
-                                            <img src="{{ $avatarUrl }}" />
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                            <div>
-                                <div class="font-bold">{{ $tenantSettings->hero_clients_satisfied_text }}</div>
-                                <div class="flex text-yellow-400">
-                                    @for ($i = 0; $i < floor($tenantSettings->hero_stars_rating); $i++)
-                                        <i class="fas fa-star"></i>
-                                    @endfor
-                                    @if ($tenantSettings->stars_rating - floor($tenantSettings->hero_stars_rating) >= 0.5)
-                                        <i class="fas fa-star-half-alt"></i>
-                                    @endif
-                                    @for ($i = 0; $i < 5 - ceil($tenantSettings->hero_stars_rating); $i++)
-                                        <i class="far fa-star"></i> 
-                                    @endfor
-                                </div>
-                            </div>
-                        </div> --}}
                     </div>
                 @endif
-
-                {{-- Formulário de busca (sempre visível, mas pode ser condicional se quiser) --}}
-                {{-- <div class="lg:w-1/2 w-full">
-                    <div class="card bg-base-100 shadow-xl">
-                        <div class="card-body">
-                            <h2 class="card-title mb-4">{{ $tenantSettings->hero_form_title }}</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                @foreach (json_decode($tenantSettings->hero_select_options) as $select)
-                                    <select class="select select-bordered">
-                                        <option disabled selected>{{ $select->placeholder }}</option>
-                                        @foreach ($select->options as $option)
-                                            <option>{{ $option }}</option>
-                                        @endforeach
-                                    </select>
-                                @endforeach
-                            </div>
-                            <div class="card-actions justify-end mt-4">
-                                <button class="btn btn-primary w-full">
-                                    <i class="{{ $tenantSettings->hero_search_button_icon }} mr-2"></i>
-                                    {{ $tenantSettings->hero_search_button_text }}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div> --}}
             </div>
         </div>
-    </section>
+    </section> --}}
+    {{-- <div class="flex items-center gap-4">
+            <div class="flex -space-x-2">
+                @foreach (json_decode($tenantSettings->hero_avatars) as $avatarUrl)
+                    <div class="avatar">
+                        <div class="w-12 h-12 rounded-full border-2 border-base-100">
+                            <img src="{{ $avatarUrl }}" />
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            <div>
+                <div class="font-bold">{{ $tenantSettings->hero_clients_satisfied_text }}</div>
+                <div class="flex text-yellow-400">
+                    @for ($i = 0; $i < floor($tenantSettings->hero_stars_rating); $i++)
+                        <i class="fas fa-star"></i>
+                    @endfor
+                    @if ($tenantSettings->stars_rating - floor($tenantSettings->hero_stars_rating) >= 0.5)
+                        <i class="fas fa-star-half-alt"></i>
+                    @endif
+                    @for ($i = 0; $i < 5 - ceil($tenantSettings->hero_stars_rating); $i++)
+                        <i class="far fa-star"></i> 
+                    @endfor
+                </div>
+            </div>
+        </div> --}}
+    {{-- Formulário de busca (sempre visível, mas pode ser condicional se quiser) --}}
+    {{-- <div class="lg:w-1/2 w-full">
+        <div class="card bg-base-100 shadow-xl">
+            <div class="card-body">
+                <h2 class="card-title mb-4">{{ $tenantSettings->hero_form_title }}</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @foreach (json_decode($tenantSettings->hero_select_options) as $select)
+                        <select class="select select-bordered">
+                            <option disabled selected>{{ $select->placeholder }}</option>
+                            @foreach ($select->options as $option)
+                                <option>{{ $option }}</option>
+                            @endforeach
+                        </select>
+                    @endforeach
+                </div>
+                <div class="card-actions justify-end mt-4">
+                    <button class="btn btn-primary w-full">
+                        <i class="{{ $tenantSettings->hero_search_button_icon }} mr-2"></i>
+                        {{ $tenantSettings->hero_search_button_text }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div> --}}
 
     <div class="container mx-auto px-4 -mt-12">
         <div class="animate-fade-in" style="animation-delay: 0.1s">
@@ -439,7 +504,9 @@
         <div class="container mx-auto px-4">
             <div class="flex flex-col lg:flex-row items-center gap-12">
                 <div class="lg:w-1/2 animate-fade-in">
-                    <img src="{{ asset($tenantSettings->about_image) ?? 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}"
+                    {{-- <img src="{{ asset($tenantSettings->about_image) ?? 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}" --}}
+                    {{-- <img src="{{ '/storage/'.$tenantSettings->about_image ?? 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}" --}}
+                    <img src="{{ $tenantSettings->about_image ?? 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}"
                         alt="Destaque da imobiliária" class="rounded-lg shadow-xl w-full h-auto">
                 </div>
                 <div class="lg:w-1/2 animate-fade-in" style="animation-delay: 0.2s">
@@ -569,6 +636,91 @@
 
     <footer class="footer p-10 bg-neutral text-neutral-content">
         <div class="container mx-auto px-4">
+            {{-- <div class="grid grid-cols-1 md:grid-cols-3 gap-8"> --}}
+            <div class="flex flex-col md:flex-row justify-around gap-8 w-full">
+                <div>
+                    {{-- Usamos o nome do site das configurações --}}
+                    <span class="footer-title">{{ $tenantSettings->site_name ?? 'Sua Imobiliária' }}</span>
+                    {{-- Usamos a descrição do site das configurações --}}
+                    <p>{{ $tenantSettings->site_description ?? 'Há mais de 20 anos ajudando pessoas a encontrar seu lar ideal.' }}
+                    </p>
+                    <div class="flex gap-4 mt-4">
+                        @if ($tenantSettings->social_facebook)
+                            <a href="{{ $tenantSettings->social_facebook }}" class="btn btn-circle btn-sm btn-ghost"
+                                target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                        @endif
+                        @if ($tenantSettings->social_instagram)
+                            <a href="{{ $tenantSettings->social_instagram }}" class="btn btn-circle btn-sm btn-ghost"
+                                target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        @endif
+                        @if ($tenantSettings->social_linkedin)
+                            <a href="{{ $tenantSettings->social_linkedin }}" class="btn btn-circle btn-sm btn-ghost"
+                                target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        @endif
+                        {{-- Adicionado link para Twitter/X, se configurado --}}
+                        @if ($tenantSettings->social_twitter)
+                            <a href="{{ $tenantSettings->social_twitter }}" class="btn btn-circle btn-sm btn-ghost"
+                                target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-twitter"></i> {{-- Use fab fa-x-twitter se sua versão do Font Awesome suportar o novo logo --}}
+                            </a>
+                        @endif
+                        {{-- Adicionado link para Youtube, se configurado --}}
+                        @if ($tenantSettings->social_youtube)
+                            <a href="{{ $tenantSettings->social_youtube }}" class="btn btn-circle btn-sm btn-ghost"
+                                target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+                <div>
+                    <span class="footer-title">Links Rápidos</span>
+                    <ul>
+                        <li><a href="#destaques" class="link link-hover">Imóveis em Destaque</a></li>
+                        <li><a href="#recentes" class="link link-hover">Imóveis Recentes</a></li>
+                        {{-- <li><a href="#sobre" class="link link-hover">Sobre Nós</a></li>
+                        <li><a href="#contato" class="link link-hover">Contato</a></li> --}}
+                    </ul>
+                </div>
+
+                <div>
+                    <span class="footer-title">Contato</span>
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-map-marker-alt mr-2"></i>
+                        {{-- Usamos o endereço de contato das configurações --}}
+                        <span>{{ $tenantSettings->contact_address }}</span>
+                    </div>
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-phone-alt mr-2"></i>
+                        {{-- Usamos o telefone de contato das configurações --}}
+                        <span>{{ $tenantSettings->contact_phone }}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-envelope mr-2"></i>
+                        {{-- Usamos o e-mail de contato das configurações --}}
+                        <span>{{ $tenantSettings->contact_email }}</span>
+                    </div>
+                </div>
+
+                {{-- A seção de Newsletter continua comentada, se precisar, pode descomentar e configurá-la --}}
+            </div>
+
+            <div class="border-t w-full border-gray-700 mt-8 pt-8 text-center">
+                {{-- Usamos o nome do site para o copyright --}}
+                <p>&copy; {{ date('Y') }} {{ $tenantSettings->site_name }}. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    {{-- <footer class="footer p-10 bg-neutral text-neutral-content">
+        <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
                     <span class="footer-title">Imobiliária</span>
@@ -619,24 +771,24 @@
                     </div>
                 </div>
 
-                {{-- <div>
-                    <span class="footer-title">Newsletter</span>
-                    <p>Assine nossa newsletter para receber novidades</p>
-                    <div class="form-control mt-4">
-                        <div class="relative">
-                            <input type="text" placeholder="seu@email.com"
-                                class="input input-bordered w-full pr-16">
-                            <button class="btn btn-primary absolute top-0 right-0 rounded-l-none">Assinar</button>
-                        </div>
-                    </div>
-                </div> --}}
             </div>
-
+            
             <div class="border-t w-full border-gray-700 mt-8 pt-8 text-center">
                 <p>&copy; {{ date('Y') }} {{ $tenantSettings->site_name }}. Todos os direitos reservados.</p>
             </div>
         </div>
-    </footer>
+    </footer> --}}
+    {{-- <div>
+        <span class="footer-title">Newsletter</span>
+        <p>Assine nossa newsletter para receber novidades</p>
+        <div class="form-control mt-4">
+            <div class="relative">
+                <input type="text" placeholder="seu@email.com"
+                    class="input input-bordered w-full pr-16">
+                <button class="btn btn-primary absolute top-0 right-0 rounded-l-none">Assinar</button>
+            </div>
+        </div>
+    </div> --}}
 
 
     <div x-data="{ open: false }" class="fixed bottom-6 right-6 z-50">

@@ -20,7 +20,7 @@ class DemoController extends Controller
         ];
 
         $heroSection = [
-            'background_type' => 'gradient', // Opções: 'gradient' ou 'image'
+            'background_type' => 'image', // Opções: 'gradient' ou 'image'
             'gradient' => [
                 'direction' => 'to-br', // Opções: 'to-t', 'to-b', 'to-l', 'to-r', 'to-tl', 'to-tr', 'to-bl', 'to-br'
                 'from_color' => '#65fa60ff', // Cores do Tailwind CSS (e.g., 'blue-500', 'red-700')
@@ -125,7 +125,7 @@ class DemoController extends Controller
                 'type' => 'apartamento',
                 'image' => 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
                 'status' => 'novo', // Use 'novo' ou 'disponivel' conforme sua lógica
-                'details_link' => route('home.property', 4) // Exemplo de link dinâmico
+                'details_link' => route('demo.property', 4) // Exemplo de link dinâmico
             ],
             [
                 'id' => 5,
@@ -138,7 +138,7 @@ class DemoController extends Controller
                 'type' => 'casa',
                 'image' => 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
                 'status' => 'novo',
-                'details_link' => route('home.property', 5)
+                'details_link' => route('demo.property', 5)
             ],
             [
                 'id' => 6,
@@ -151,7 +151,7 @@ class DemoController extends Controller
                 'type' => 'apartamento',
                 'image' => 'https://images.unsplash.com/photo-1605146769289-440113cc3d00?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
                 'status' => 'novo',
-                'details_link' => route('home.property', 6)
+                'details_link' => route('demo.property', 6)
             ],
             [
                 'id' => 7,
@@ -167,7 +167,7 @@ class DemoController extends Controller
                 'status' => 'novo',
                 // Adicionei 'vagas_garagem' para o terreno, se for relevante, ou omita
                 'vagas_garagem' => 2,
-                'details_link' => route('home.property', 7)
+                'details_link' => route('demo.property', 7)
             ],
         ];
 

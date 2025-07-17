@@ -17,7 +17,7 @@ class Index extends Component
 
     public TenantSettingsForm $form;
 
-    public string $tab = 'homepage'; //'general'; // Para controlar a aba ativa
+    public string $tab = 'homepage'; //'homepage'; // Para controlar a aba ativa
 
     /**
      * O método mount é executado quando o componente é inicializado.
@@ -86,8 +86,8 @@ class Index extends Component
      */
     public function save(): void
     {
+        $this->form->save(); // Chama o método save do Form Object
         try {
-            $this->form->save(); // Chama o método save do Form Object
 
             $this->success('Configurações salvas com sucesso!', redirectTo: route('admin.tenant-settings.index'));
         } catch (\Illuminate\Validation\ValidationException $e) {

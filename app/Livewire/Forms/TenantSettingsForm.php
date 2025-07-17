@@ -99,7 +99,7 @@ class TenantSettingsForm extends Form
     public ?string $hero_gradient_to_color = null;
 
     #[Validate('nullable|image|max:2048')]
-    public $hero_image_url; // Campo de upload
+    public $hero_image; // Campo de upload
 
     public ?string $hero_image_url_existing = null; // Para manter a URL da imagem existente
 
@@ -152,7 +152,8 @@ class TenantSettingsForm extends Form
     #[Validate('nullable|string')]
     public ?string $about_content = null;
 
-    #[Validate('nullable|image|max:2048')]
+    // #[Validate('nullable|image|max:2048')]
+    #[Validate('nullable|image')]
     public $about_image; // Campo de upload
 
     public ?string $about_image_url_existing = null; // Para manter a URL da imagem existente
@@ -215,16 +216,21 @@ class TenantSettingsForm extends Form
         // Percorre os fillables para preencher dinamicamente
         foreach ($tenantSetting->getFillable() as $field) {
             // Lidar com campos de upload de imagem para guardar a URL existente
-            if (in_array($field, ['site_logo', 'site_favicon', 'meta_image', 'hero_image_url', 'about_image'])) {
+            if (in_array($field, ['site_logo', 'site_favicon', 'meta_image', 'hero_image', 'about_image'])) {
                 $existingUrlField = $field . '_url_existing';
                 // A propriedade do Form Object deve ser preenchida com o valor do banco de dados
                 $this->$existingUrlField = $tenantSetting->$field;
-                // if($field === 'about_image') {
+                // if($field === 'hero_image_url') {
+                //     $this->hero_image_url = $tenantSetting->hero_image_url;
                 //     dd($this->$existingUrlField);
                 // }
-                // dd($this->$existingUrlField);
+                // dump($this->$existingUrlField);
                 continue; // Pula o preenchimento da propriedade de upload temporário
             }
+            // if($field === 'hero_image_url'){
+
+            //     dd('oiii', $this->$field);
+            // }
 
             // AQUI MUDAMOS O TRATAMENTO DE about_features
             if ($field === 'about_features') {
@@ -262,11 +268,12 @@ class TenantSettingsForm extends Form
                 continue;
             }
 
+            
             // Preencher outras propriedades diretamente se existirem no modelo e no formulário
             if (property_exists($this, $field)) {
                 $this->$field = $tenantSetting->$field;
+                // dump($field, $tenantSetting->$field);
             }
-            // Garante que pelo menos um item exista se o array estiver vazio, para ter um campo para o usuário preencher
         }
         if (empty($this->about_features_list)) {
             $this->addFeature();
@@ -275,7 +282,8 @@ class TenantSettingsForm extends Form
         if (empty($this->engagement_metrics_list)) {
             $this->addMetric();
         }
-        // dd($tenantSetting, $this->engagement_metrics_list, $this->engagement_metrics_list);
+        $this->hero_image_url_existing = $tenantSetting->hero_image_url;
+        // dd($this->hero_image_url_existing);
     }
 
     public function addFeature(): void
@@ -338,10 +346,10 @@ class TenantSettingsForm extends Form
         $data = $this->all(); // Pega todos os dados do formulário
 
         // Processar uploads de arquivos e remover temporários
-        // $this->handleFileUpload($data, 'site_logo');
-        // $this->handleFileUpload($data, 'site_favicon');
-        // $this->handleFileUpload($data, 'meta_image');
-        // $this->handleFileUpload($data, 'hero_image_url');
+        $this->handleFileUpload($data, 'site_logo');
+        $this->handleFileUpload($data, 'site_favicon');
+        $this->handleFileUpload($data, 'meta_image');
+        $this->handleFileUpload($data, 'hero_image');
         $this->handleFileUpload($data, 'about_image');
 
         // Converter strings de textarea JSON para arrays PHP
@@ -360,6 +368,7 @@ class TenantSettingsForm extends Form
         // dd($data['about_image_url_existing'], $data['about_image'], $data['about_image_url_existing']);
         $data['about_features'] = $this->about_features_list;
         $data['engagement_metrics'] = $this->engagement_metrics_list;
+        $data['hero_image_url'] = $data['hero_image'] ?? null; // Manter a URL existente se não houver novo upload
 
         // Remover propriedades auxiliares antes de salvar no DB
         unset(
@@ -375,16 +384,16 @@ class TenantSettingsForm extends Form
             $data['about_features_list'],
             $data['engagement_metrics_list'],
             // Remover as propriedades de upload temporárias que não são para salvar no DB
-            $data['site_logo'],
-            $data['site_favicon'],
-            $data['meta_image'],
-            $data['hero_image_url'],
+            // $data['site_logo'],
+            // $data['site_favicon'],
+            // $data['meta_image'],
+            // $data['hero_image_url'],
             // $data['about_image'],
         );
 
 
         // dd($data);
-
+        
         $this->tenantSetting->update($data);
     }
 
@@ -395,23 +404,25 @@ class TenantSettingsForm extends Form
      */
     private function handleFileUpload(array &$data, string $propertyName): void
     {
-        // dd($data, $propertyName);
         $existingUrlProperty = $propertyName . '_url_existing'; // Propriedade para a URL existente
+        // dd($propertyName, $existingUrlProperty, $this->$existingUrlProperty,  $this->tenantSetting->{$propertyName}, $this->tenantSetting->{$propertyName} !== $this->$existingUrlProperty);
+        // dd($this->tenantSetting->{$propertyName} && $this->tenantSetting->{$propertyName} !== $this->$existingUrlProperty);
         // Verifica se um novo arquivo foi carregado
         if (isset($this->$propertyName) && is_object($this->$propertyName) && method_exists($this->$propertyName, 'store')) {
             // Exclui a imagem antiga se existir e for diferente do novo upload (para evitar excluir a própria imagem ao re-salvar sem mudança)
             if ($this->tenantSetting->{$propertyName} && $this->tenantSetting->{$propertyName} !== $this->$existingUrlProperty) {
-                Storage::delete($this->tenantSetting->{$propertyName});
+                Storage::delete(str_replace('/storage/', '', $this->tenantSetting->{$propertyName}));
             }
+            // dd($this->tenantSetting->{$propertyName});
             // Armazena o novo arquivo e atualiza o caminho no array de dados
-            $data[$propertyName] = $this->$propertyName->storePublicly('tenant_settings');
-            // $data[$propertyName] = Storage::put('tenant_settings', $this->$propertyName, 'public'); // Armazena publicamente
+            // $data[$propertyName] = $this->$propertyName->storePublicly('tenant_settings');
+            $data[$propertyName] =  '/storage/' . Storage::disk('public')->put('settings', $this->$propertyName); // Armazena publicamente
             // dd('1',$data[$propertyName]);
         } elseif (!empty($this->$existingUrlProperty)) {
             // Se nenhum novo arquivo foi carregado, mas há uma URL existente (significa que o usuário não mudou a imagem ou a manteve)
             $data[$propertyName] = $this->$existingUrlProperty;
         } else {
-            dd('3', $this->tenantSetting->{$propertyName});
+            // dd('3', $this->tenantSetting->{$propertyName});
             // Se o campo de upload foi limpo (novo upload é null e não há url existente)
             // Ou se a imagem existente foi removida via botão de lixeira
             if ($this->tenantSetting->{$propertyName}) { // Se havia uma imagem no DB e foi explicitamente removida

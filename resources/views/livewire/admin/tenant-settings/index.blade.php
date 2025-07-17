@@ -24,8 +24,9 @@
                                 <x-avatar :image="$form->site_logo
                                     ? $form->site_logo->temporaryUrl()
                                     : ($form->site_logo_url_existing
-                                        ? Storage::url($form->site_logo_url_existing)
-                                        : '')" class="!w-32 !h-auto" />
+                                        ?  //Storage::url($form->site_logo_url_existing)
+                                        asset($form->site_logo_url_existing)
+                                        : '')" class="!w-32 !h-auto  !rounded-lg" />
                                 @if ($form->site_logo || $form->site_logo_url_existing)
                                     <x-button icon="o-trash"
                                         wire:click="form.site_logo = null; form.site_logo_url_existing = null;" spinner
@@ -43,7 +44,8 @@
                                 <x-avatar :image="$form->site_favicon
                                     ? $form->site_favicon->temporaryUrl()
                                     : ($form->site_favicon_url_existing
-                                        ? Storage::url($form->site_favicon_url_existing)
+                                        ? //Storage::url($form->site_favicon_url_existing)
+                                        asset($form->site_favicon_url_existing)
                                         : '')" class="!w-16 !h-16" />
                                 @if ($form->site_favicon || $form->site_favicon_url_existing)
                                     <x-button icon="o-trash"
@@ -120,7 +122,8 @@
                                 <x-avatar :image="$form->meta_image
                                     ? $form->meta_image->temporaryUrl()
                                     : ($form->meta_image_url_existing
-                                        ? Storage::url($form->meta_image_url_existing)
+                                        ? // Storage::url($form->meta_image_url_existing)
+                                        asset($form->meta_image_url_existing)
                                         : '')" class="!w-32 !h-auto" />
                                 @if ($form->meta_image || $form->meta_image_url_existing)
                                     <x-button icon="o-trash"
@@ -181,18 +184,19 @@
                             placeholder="Selecione uma direção" />
                     @elseif ($form->hero_background_type === 'image')
                         <div>
-                            <x-file label="Imagem de Fundo do Hero" wire:model="form.hero_image_url"
+                            <x-file label="Imagem de Fundo do Hero" wire:model="form.hero_image"
                                 accept="image/png, image/jpeg" />
-                            @if ($form->hero_image_url || $form->hero_image_url_existing)
+                            @if ($form->hero_image || $form->hero_image_url_existing)
                                 <div class="flex items-center gap-4 mt-2">
-                                    <x-avatar :image="$form->hero_image_url
-                                        ? $form->hero_image_url->temporaryUrl()
+                                    <x-avatar :image="$form->hero_image
+                                        ? $form->hero_image->temporaryUrl()
                                         : ($form->hero_image_url_existing
-                                            ? Storage::url($form->hero_image_url_existing)
+                                            ? // Storage::url($form->hero_image_url_existing)
+                                            asset($form->hero_image_url_existing)
                                             : '')" class="!w-32 !h-auto" />
-                                    @if ($form->hero_image_url || $form->hero_image_url_existing)
+                                    @if ($form->hero_image || $form->hero_image_url_existing)
                                         <x-button icon="o-trash"
-                                            wire:click="form.hero_image_url = null; form.hero_image_url_existing = null;"
+                                            wire:click="form.hero_image = null; form.hero_image_url_existing = null;"
                                             spinner class="btn-ghost btn-sm text-error" />
                                     @endif
                                 </div>
@@ -285,24 +289,33 @@
                     <x-textarea label="Descrição" wire:model="form.engagement_description" rows="3" />
 
                     <div class="lg:col-span-2">
-                        <h4 class="text-lg font-semibold mb-3">Métricas de Engajamento</h4>
-                        @foreach ($form->engagement_metrics_list as $index => $metric)
-                            <div wire:key="metric-{{ $index }}"
-                                class="bg-base-200 p-4 rounded-lg mb-4 flex flex-col gap-3">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-medium text-sm">Métrica #{{ $index + 1 }}</span>
-                                    <x-button icon="o-trash" wire:click="removeEngagementMetric({{ $index }})"
-                                        spinner class="btn-ghost btn-sm text-error" />
-                                </div>
-                                <x-input label="Valor da Métrica"
-                                    wire:model="form.engagement_metrics_list.{{ $index }}.value"
-                                    placeholder="Ex: 1.200+, 98%" />
-                                <x-input label="Descrição da Métrica"
-                                    wire:model="form.engagement_metrics_list.{{ $index }}.description" />
-                            </div>
-                        @endforeach
-                        <x-button label="Adicionar Métrica" icon="o-plus" wire:click="addEngagementMetric"
-                            class="btn-outline btn-primary mt-4" />
+                        <x-collapse separator>
+                            <x-slot:heading>
+                                <h4 class="text-lg font-semibold mb-3">Métricas de Engajamento</h4>
+                            </x-slot:heading>
+                            <x-slot:content>
+                                @foreach ($form->engagement_metrics_list as $index => $metric)
+                                    <div wire:key="metric-{{ $index }}"
+                                        class="bg-base-200 p-4 rounded-lg mb-4 flex flex-col gap-3">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-medium text-sm">Métrica #{{ $index + 1 }}</span>
+                                            <x-button icon="o-trash"
+                                                wire:click="removeEngagementMetric({{ $index }})" spinner
+                                                class="btn-ghost btn-sm text-error" />
+                                        </div>
+                                        <x-input label="Valor da Métrica"
+                                            wire:model="form.engagement_metrics_list.{{ $index }}.value"
+                                            placeholder="Ex: 1.200+, 98%" />
+                                        <x-input label="Descrição da Métrica"
+                                            wire:model="form.engagement_metrics_list.{{ $index }}.description" />
+                                    </div>
+                                @endforeach
+                                <x-button label="Adicionar Métrica" icon="o-plus" wire:click="addEngagementMetric"
+                                    class="btn-outline btn-primary mt-4" />
+                            </x-slot:content>
+                        </x-collapse>
+
+
                     </div>
 
                     <x-input label="Texto Botão Imóveis" wire:model="form.engagement_btn_properties_text" />
