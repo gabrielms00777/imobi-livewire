@@ -17,32 +17,71 @@ return new class extends Migration
             $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('set null'); // Imobiliária proprietária (pode ser diferente do user->company_id)
 
             $table->string('title');
+            $table->string('slug')->unique(); // ESSENCIAL: Adicionado para URLs amigáveis e SEO
             $table->text('description');
             $table->decimal('price', 15, 2);
-            $table->string('address');
+            $table->decimal('rent_price', 15, 2)->nullable(); // ESSENCIAL: Para imóveis de aluguel
+            $table->string('currency', 3)->default('BRL'); // ESSENCIAL: Para indicar a moeda
+
+            // ESSENCIAL: Campos de endereço granulares, substituindo o campo 'address'
+            $table->string('street');
+            $table->string('number', 50);
+            $table->string('complement')->nullable();
+            $table->string('neighborhood');
             $table->string('city');
             $table->string('state');
             $table->string('zip_code')->nullable();
-            $table->string('property_type'); // Ex: 'Casa', 'Apartamento', 'Terreno', 'Comercial'
-            $table->string('transaction_type'); // Ex: 'Venda', 'Aluguel'
+
+            // Renomeados para alinhar com o PropertyForm
+            $table->string('type'); // ESSENCIAL: Renomeado de 'property_type'
+            $table->string('purpose'); // ESSENCIAL: Renomeado de 'transaction_type'
+
             $table->integer('bedrooms')->nullable();
             $table->integer('bathrooms')->nullable();
-            $table->integer('suites')->nullable();
+            $table->integer('suites')->nullable(); // Já presente, mantido
             $table->float('area')->nullable(); // em m²
             $table->integer('garage_spaces')->nullable();
-            $table->text('amenities')->nullable(); // Campo JSON para listar comodidades (piscina, churrasqueira, etc.)
+            $table->text('amenities')->nullable(); // Campo JSON para listar comodidades
 
             $table->string('status')->default('available'); // Ex: 'available', 'pending', 'sold', 'rented'
-            $table->boolean('is_featured')->default(false); // Para imóveis em destaque
+            $table->boolean('featured')->default(false); // ESSENCIAL: Renomeado de 'is_featured'
 
-            // Adicione colunas para imagens se for armazenar diretamente no DB ou URLs
-            // É mais comum ter uma tabela 'property_images' separada para múltiplas imagens
-            $table->string('main_image_url')->nullable(); // Imagem principal
-
-            // $table->softDeletes(); // Para permitir exclusão lógica
+            // main_image_url foi REMOVIDO pois o MediaLibrary será usado para gerenciar as imagens
 
             $table->timestamps();
         });
+        // Schema::create('properties', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null'); // Corretor que cadastrou
+        //     $table->foreignId('company_id')->nullable()->constrained('companies')->onDelete('set null'); // Imobiliária proprietária (pode ser diferente do user->company_id)
+
+        //     $table->string('title');
+        //     $table->text('description');
+        //     $table->decimal('price', 15, 2);
+        //     $table->string('address');
+        //     $table->string('city');
+        //     $table->string('state');
+        //     $table->string('zip_code')->nullable();
+        //     $table->string('property_type'); // Ex: 'Casa', 'Apartamento', 'Terreno', 'Comercial'
+        //     $table->string('transaction_type'); // Ex: 'Venda', 'Aluguel'
+        //     $table->integer('bedrooms')->nullable();
+        //     $table->integer('bathrooms')->nullable();
+        //     $table->integer('suites')->nullable();
+        //     $table->float('area')->nullable(); // em m²
+        //     $table->integer('garage_spaces')->nullable();
+        //     $table->text('amenities')->nullable(); // Campo JSON para listar comodidades (piscina, churrasqueira, etc.)
+
+        //     $table->string('status')->default('available'); // Ex: 'available', 'pending', 'sold', 'rented'
+        //     $table->boolean('is_featured')->default(false); // Para imóveis em destaque
+
+        //     // Adicione colunas para imagens se for armazenar diretamente no DB ou URLs
+        //     // É mais comum ter uma tabela 'property_images' separada para múltiplas imagens
+        //     $table->string('main_image_url')->nullable(); // Imagem principal
+
+        //     // $table->softDeletes(); // Para permitir exclusão lógica
+
+        //     $table->timestamps();
+        // });
         // Schema::create('properties', function (Blueprint $table) {
         //     $table->id();
 

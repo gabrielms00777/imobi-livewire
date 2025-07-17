@@ -2,217 +2,211 @@
 
 namespace App\Livewire\Admin\Property;
 
-// use App\Livewire\Forms\Admin\PropertyForm;
-use App\Models\Property;
+use App\Livewire\Forms\Admin\PropertyForm; // Importa o Form Object
+use App\Models\Property; // Pode ser necessário se você manipular o modelo diretamente aqui
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
-use Mary\Traits\Toast;
-// use Spatie\MediaLibrary\MediaCollections\Models\Media;
-use Illuminate\Support\Str;
 use Livewire\WithFileUploads;
+use Mary\Traits\Toast;
+// use Livewire\WithFileUploads; // Removido daqui, agora está no PropertyForm
 
 class Create extends Component
 {
-    use Toast, WithFileUploads;
+    use Toast, WithFileUploads; // Habilita o uso de toasts/notificações da MaryUI
 
-    // public PropertyForm $form;
+    public PropertyForm $form; // Declara a propriedade do formulário
 
-    // Form fields
-    public string $title = 'Teste';
-    public string $description = 'Descrição teste';
-    public string $type = 'casa';
-    public string $purpose = 'venda';
-    public string $status = 'rascunho';
-    public ?float $price = 1000000;
-    public ?float $rent_price = 1000;
-    public ?int $bedrooms = 2;
-    public ?int $bathrooms = 2;
-    public ?int $garage_spaces = 1;
-    public ?int $area = 300;
-    public ?int $total_area = 400;
-    public ?int $construction_area = 200;
-    public ?int $floors = null;
-    public ?int $year_built = null;
-    public string $street = 'Teste';
-    public string $number = '123';
-    public ?string $complement = 'casa';
-    public string $neighborhood = 'Teste';
-    public string $city = 'Ribeirão Preto';
-    public string $state = 'SP';
-    public string $zip_code = '14050090';
-    public ?float $latitude = null;
-    public ?float $longitude = null;
-    public bool $featured = true;
-    public ?string $video_url = null;
-    public ?string $virtual_tour_url = null;
-    public array $amenities = [];
-    public array $gallery = [];
-    public $thumbnail;
+    // Opções para selects e checkboxes (ainda podem ser inicializadas aqui)
+    public array $typeOptions;
+    public array $purposeOptions;
+    public array $statusOptions;
+    public array $amenityOptions;
+    public array $stateOptions;
 
-    // Amenities options
-    public array $amenityOptions = [
-        'piscina' => 'Piscina',
-        'academia' => 'Academia',
-        'churrasqueira' => 'Churrasqueira',
-        'salao-de-festas' => 'Salão de Festas',
-        'playground' => 'Playground',
-        'portaria-24h' => 'Portaria 24h',
-        'elevador' => 'Elevador',
-        'quadra' => 'Quadra',
-        'salao-de-jogos' => 'Salão de Jogos',
-        'area-verde' => 'Área Verde'
-    ];
-
-    // Validation rules
-    protected function rules(): array
+    /**
+     * O método mount é executado quando o componente é inicializado.
+     * Aqui, vamos inicializar as opções dos selects.
+     */
+    public function mount(): void
     {
-        return [
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|min:50',
-            'type' => 'required|in:casa,apartamento,terreno,comercial,outro',
-            'purpose' => 'required|in:venda,aluguel,ambos',
-            'status' => 'required|in:rascunho,disponivel,vendido,alugado',
-            'price' => 'required_if:purpose,venda,ambos|numeric|min:0',
-            'rent_price' => 'required_if:purpose,aluguel,ambos|numeric|min:0',
-            'bedrooms' => 'nullable|integer|min:0',
-            'bathrooms' => 'nullable|integer|min:0',
-            'garage_spaces' => 'nullable|integer|min:0',
-            'area' => 'nullable|integer|min:0',
-            'total_area' => 'nullable|integer|min:0',
-            'construction_area' => 'nullable|integer|min:0',
-            'floors' => 'nullable|integer|min:0',
-            'year_built' => 'nullable|integer|min:1800|max:' . (date('Y') + 1),
-            'street' => 'required|string|max:255',
-            'number' => 'required|string|max:20',
-            'complement' => 'nullable|string|max:255',
-            'neighborhood' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
-            'state' => 'required|string|size:2',
-            'zip_code' => 'required|string|max:9',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
-            'featured' => 'boolean',
-            'video_url' => 'nullable|url',
-            'virtual_tour_url' => 'nullable|url',
-            'amenities' => 'array',
-            'amenities.*' => 'string|in:' . implode(',', array_keys($this->amenityOptions)),
-            'gallery' => 'array|max:20',
-            'thumbnail' => 'nullable|image|max:10240', // 10MB
+        // Inicializa as opções dos selects/checkboxes
+        $this->typeOptions = [
+            ['id' => 'casa', 'name' => 'Casa'],
+            ['id' => 'apartamento', 'name' => 'Apartamento'],
+            ['id' => 'terreno', 'name' => 'Terreno'],
+            ['id' => 'comercial', 'name' => 'Comercial'],
+            ['id' => 'outro', 'name' => 'Outro']
         ];
+        $this->purposeOptions = [
+            ['id' => 'venda', 'name' => 'Venda'],
+            ['id' => 'aluguel', 'name' => 'Aluguel'],
+            ['id' => 'ambos', 'name' => 'Venda e Aluguel']
+        ];
+        $this->statusOptions = [
+            ['id' => 'rascunho', 'name' => 'Rascunho'],
+            ['id' => 'disponivel', 'name' => 'Disponível'],
+            ['id' => 'vendido', 'name' => 'Vendido'],
+            ['id' => 'alugado', 'name' => 'Alugado']
+        ];
+        $this->amenityOptions = [
+            'piscina' => 'Piscina',
+            'churrasqueira' => 'Churrasqueira',
+            'sacada' => 'Sacada',
+            'academia' => 'Academia',
+            'playground' => 'Playground',
+            'portaria-24h' => 'Portaria 24h',
+            'mobiliado' => 'Mobiliado',
+            'ar-condicionado' => 'Ar Condicionado',
+            'elevador' => 'Elevador',
+            'lareira' => 'Lareira',
+            'jardim' => 'Jardim',
+            'area-servico' => 'Área de Serviço',
+            'quadra-esportiva' => 'Quadra Esportiva',
+            'salao-festas' => 'Salão de Festas',
+            'sauna' => 'Sauna',
+            'varanda-gourmet' => 'Varanda Gourmet',
+        ];
+        $this->stateOptions = [
+            ['id' => 'AC', 'name' => 'Acre'],
+            ['id' => 'AL', 'name' => 'Alagoas'],
+            ['id' => 'AP', 'name' => 'Amapá'],
+            ['id' => 'AM', 'name' => 'Amazonas'],
+            ['id' => 'BA', 'name' => 'Bahia'],
+            ['id' => 'CE', 'name' => 'Ceará'],
+            ['id' => 'DF', 'name' => 'Distrito Federal'],
+            ['id' => 'ES', 'name' => 'Espírito Santo'],
+            ['id' => 'GO', 'name' => 'Goiás'],
+            ['id' => 'MA', 'name' => 'Maranhão'],
+            ['id' => 'MT', 'name' => 'Mato Grosso'],
+            ['id' => 'MS', 'name' => 'Mato Grosso do Sul'],
+            ['id' => 'MG', 'name' => 'Minas Gerais'],
+            ['id' => 'PA', 'name' => 'Pará'],
+            ['id' => 'PB', 'name' => 'Paraíba'],
+            ['id' => 'PR', 'name' => 'Paraná'],
+            ['id' => 'PE', 'name' => 'Pernambuco'],
+            ['id' => 'PI', 'name' => 'Piauí'],
+            ['id' => 'RJ', 'name' => 'Rio de Janeiro'],
+            ['id' => 'RN', 'name' => 'Rio Grande do Norte'],
+            ['id' => 'RS', 'name' => 'Rio Grande do Sul'],
+            ['id' => 'RO', 'name' => 'Rondônia'],
+            ['id' => 'RR', 'name' => 'Roraima'],
+            ['id' => 'SC', 'name' => 'Santa Catarina'],
+            ['id' => 'SP', 'name' => 'São Paulo'],
+            ['id' => 'SE', 'name' => 'Sergipe'],
+            ['id' => 'TO', 'name' => 'Tocantins'],
+        ];
+
+        // Se este componente fosse para edição, você faria:
+        // $property = Property::findOrFail($id);
+        // $this->form->setForProperty($property);
+
+        // Inicialize o Form Object (seus valores padrão já serão aplicados)
+        $this->form->title = 'Teste'; // Limpa defaults se necessário ou confie nos defaults do form object
+        $this->form->description = 'Descrição do imóvel';
+        $this->form->type = 'casa';
+        $this->form->purpose = 'ambos';
+        $this->form->status = 'disponivel';
+        $this->form->price = 100000;
+        $this->form->rent_price = 10000;
+        $this->form->bedrooms = 2;
+        $this->form->bathrooms = 2;
+        $this->form->suites = 2;
+        $this->form->garage_spaces = 1;
+        $this->form->area = 300;
+        // $this->form->total_area = 350;
+        // $this->form->construction_area = null;
+        // $this->form->floors = null;
+        // $this->form->year_built = null;
+        $this->form->street = 'Rua Teste';
+        $this->form->number = '321';
+        $this->form->complement = 'Casa';
+        $this->form->neighborhood = 'Teste Bairro';
+        $this->form->city = 'Ribeirão Preto';
+        $this->form->state = 'SP';
+        $this->form->zip_code = '14050090';
+        // $this->form->latitude = null;
+        // $this->form->longitude = null;
+        $this->form->featured = false;
+        // $this->form->video_url = null;
+        // $this->form->virtual_tour_url = null;
+        $this->form->amenities = [];
     }
 
-    // Save property
-    public function save()
+    /**
+     * Salva a propriedade chamando o método save do Form Object.
+     */
+    public function save(): void
     {
-        $this->validate();
+        $property = $this->form->save(); // Chama o método save do Form Object
 
-        // Create property
-        $property = Property::create([
-            'title' => $this->title,
-            'slug' => Str::slug($this->title),
-            'description' => $this->description,
-            'type' => $this->type,
-            'purpose' => $this->purpose,
-            'status' => $this->status,
-            'price' => $this->price,
-            'rent_price' => $this->purpose !== 'venda' ? $this->rent_price : null,
-            'bedrooms' => $this->bedrooms,
-            'bathrooms' => $this->bathrooms,
-            'garage_spaces' => $this->garage_spaces,
-            'area' => $this->area,
-            'total_area' => $this->total_area,
-            'construction_area' => $this->construction_area,
-            'floors' => $this->floors,
-            'year_built' => $this->year_built,
-            'street' => $this->street,
-            'number' => $this->number,
-            'complement' => $this->complement,
-            'neighborhood' => $this->neighborhood,
-            'city' => $this->city,
-            'state' => $this->state,
-            'zip_code' => $this->zip_code,
-            'latitude' => $this->latitude,
-            'longitude' => $this->longitude,
-            'featured' => $this->featured,
-            'video_url' => $this->video_url,
-            'virtual_tour_url' => $this->virtual_tour_url,
-            'amenities' => $this->amenities,
-            'user_id' => Auth::id(),
-        ]);
-
-        // Handle thumbnail
-        if ($this->thumbnail) {
-            $property->addMedia($this->thumbnail)
-                ->toMediaCollection('thumbnails');
+        $this->success('Imóvel cadastrado com sucesso!', redirectTo: route('admin.properties.index'));
+        try {
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->error('Houve um erro na validação. Verifique os campos.');
+            // O Livewire automaticamente exibirá os erros de validação ao lado dos campos.
+            Log::error('Erro de validação ao salvar imóvel: ' . $e->getMessage(), ['errors' => $e->errors()]);
+        } catch (\Exception $e) {
+            $this->error('Ocorreu um erro ao salvar: ' . $e->getMessage());
+            Log::error('Erro geral ao salvar imóvel: ' . $e->getMessage(), ['exception' => $e]);
         }
-
-        // Handle gallery images
-        foreach ($this->gallery as $image) {
-            $property->addMedia($image)
-                ->toMediaCollection('gallery');
-        }
-
-        $this->success('Imóvel cadastrado com sucesso!');
-        return redirect()->route('admin.properties.index');
     }
 
-    public function removeGalleryImage($index)
+    /**
+     * Remove uma imagem da galeria (para edição).
+     * @param int $mediaId
+     * @return void
+     */
+    public function removeGalleryImage(int $mediaId): void
     {
-        unset($this->gallery[$index]);
-        $this->gallery = array_values($this->gallery); // Reindexa o array
-        $this->success('Imagem removida da galeria.');
+        // Certifica-se de que a propriedade está carregada no formulário
+        if ($this->form->property) {
+            try {
+                $media = $this->form->property->getMedia('gallery')->find($mediaId);
+                if ($media) {
+                    $media->delete();
+                    // Atualiza o array de imagens existentes no formulário para a UI
+                    $this->form->existingGalleryImages = array_filter($this->form->existingGalleryImages, fn($image) => $image['id'] !== $mediaId);
+                    $this->success('Imagem da galeria removida com sucesso!');
+                }
+            } catch (\Exception $e) {
+                $this->error('Erro ao remover imagem da galeria: ' . $e->getMessage());
+                Log::error('Erro ao remover imagem da galeria: ' . $e->getMessage(), ['exception' => $e]);
+            }
+        } else {
+            $this->error('Erro: Propriedade não carregada.');
+        }
     }
 
+    /**
+     * Remove a miniatura principal (para edição).
+     * @return void
+     */
+    public function removeThumbnail(): void
+    {
+        // Certifica-se de que a propriedade está carregada no formulário
+        if ($this->form->property) {
+            try {
+                $media = $this->form->property->getFirstMedia('thumbnails');
+                if ($media) {
+                    $media->delete();
+                    $this->form->existingThumbnailUrl = null; // Limpa a URL existente no formulário para a UI
+                    $this->success('Miniatura removida com sucesso!');
+                }
+            } catch (\Exception $e) {
+                $this->error('Erro ao remover miniatura: ' . $e->getMessage());
+                Log::error('Erro ao remover miniatura: ' . $e->getMessage(), ['exception' => $e]);
+            }
+        } else {
+            $this->error('Erro: Propriedade não carregada.');
+        }
+    }
+
+    /**
+     * Renderiza a view do componente.
+     */
     public function render()
     {
-        return view('livewire.admin.property.create', [
-            'stateOptions' => [
-                ['id' => 'AC', 'name' => 'Acre'],
-                ['id' => 'AL', 'name' => 'Alagoas'],
-                ['id' => 'AP', 'name' => 'Amapá'],
-                ['id' => 'AM', 'name' => 'Amazonas'],
-                ['id' => 'BA', 'name' => 'Bahia'],
-                ['id' => 'CE', 'name' => 'Ceará'],
-                ['id' => 'DF', 'name' => 'Distrito Federal'],
-                ['id' => 'ES', 'name' => 'Espírito Santo'],
-                ['id' => 'GO', 'name' => 'Goiás'],
-                ['id' => 'MA', 'name' => 'Maranhão'],
-                ['id' => 'MT', 'name' => 'Mato Grosso'],
-                ['id' => 'MS', 'name' => 'Mato Grosso do Sul'],
-                ['id' => 'MG', 'name' => 'Minas Gerais'],
-                ['id' => 'PA', 'name' => 'Pará'],
-                ['id' => 'PB', 'name' => 'Paraíba'],
-                ['id' => 'PR', 'name' => 'Paraná'],
-                ['id' => 'PE', 'name' => 'Pernambuco'],
-                ['id' => 'PI', 'name' => 'Piauí'],
-                ['id' => 'RJ', 'name' => 'Rio de Janeiro'],
-                ['id' => 'RN', 'name' => 'Rio Grande do Norte'],
-                ['id' => 'RS', 'name' => 'Rio Grande do Sul'],
-                ['id' => 'RO', 'name' => 'Rondônia'],
-                ['id' => 'RR', 'name' => 'Roraima'],
-                ['id' => 'SC', 'name' => 'Santa Catarina'],
-                ['id' => 'SP', 'name' => 'São Paulo'],
-                ['id' => 'SE', 'name' => 'Sergipe'],
-                ['id' => 'TO', 'name' => 'Tocantin'],
-            ],
-            'typeOptions' => [
-                ['id' => 'casa', 'name' => 'Casa'],
-                ['id' => 'apartamento', 'name' => 'Apartamento'],
-                ['id' => 'terreno', 'name' => 'Terreno'],
-                ['id' => 'comercial', 'name' => 'Comercial'],
-                ['id' => 'outro', 'name' => 'Outro']
-            ],
-            'purposeOptions' => [
-                ['id' => 'venda', 'name' => 'Venda'],
-                ['id' => 'aluguel', 'name' => 'Aluguel'],
-                ['id' => 'ambos', 'name' => 'Venda e Aluguel']
-            ],
-            'statusOptions' => [
-                ['id' => 'rascunho', 'name' => 'Rascunho'],
-                ['id' => 'disponivel', 'name' => 'Disponível'],
-                ['id' => 'vendido', 'name' => 'Vendido'],
-                ['id' => 'alugado', 'name' => 'Alugado']
-            ]
-        ]);
+        return view('livewire.admin.property.create');
     }
 }

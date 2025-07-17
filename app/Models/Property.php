@@ -20,43 +20,111 @@ class Property extends Model implements HasMedia
         'user_id',
         'company_id',
         'title',
+        'slug',
         'description',
         'price',
-        'address',
+        'rent_price',
+        'currency',
+        'street',
+        'number',
+        'complement',
+        'neighborhood',
         'city',
         'state',
         'zip_code',
-        'property_type',
-        'transaction_type',
+        'type',
+        'purpose',
         'bedrooms',
         'bathrooms',
-        'suites',
+        'suites', // Adicionado
         'area',
+        'total_area',
+        'construction_area',
+        'floors',
+        'year_built',
         'garage_spaces',
         'amenities',
         'status',
-        'is_featured',
-        'main_image_url',
+        'featured',
+        'latitude',
+        'longitude',
+        'video_url',
+        'virtual_tour_url',
+        // 'highlights', // Se você adicionar essa coluna
     ];
 
     protected $casts = [
-        'price' => 'float',
+        'amenities' => 'array', // ESSENCIAL: Garante que amenities seja tratado como array
+        'price' => 'float', // Boa prática
+        'rent_price' => 'float', // Boa prática
         'area' => 'float',
-        'is_featured' => 'boolean',
-        'amenities' => 'array',
+        'total_area' => 'float',
+        'construction_area' => 'float',
+        'featured' => 'boolean',
+        // 'highlights' => 'array', // Se você adicionar essa coluna
     ];
 
-    // Relação com o usuário que cadastrou (corretor)
+    // Relacionamentos
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Relação com a imobiliária proprietária do imóvel
     public function company()
     {
         return $this->belongsTo(Company::class);
     }
+
+    // Métodos para MediaLibrary (opcional, mas bom para organização)
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('thumbnails')
+            ->singleFile(); // Apenas uma imagem principal
+
+        $this->addMediaCollection('gallery'); // Múltiplas imagens para galeria
+    }
+
+    // protected $fillable = [
+    //     'user_id',
+    //     'company_id',
+    //     'title',
+    //     'description',
+    //     'price',
+    //     'address',
+    //     'city',
+    //     'state',
+    //     'zip_code',
+    //     'property_type',
+    //     'transaction_type',
+    //     'bedrooms',
+    //     'bathrooms',
+    //     'suites',
+    //     'area',
+    //     'garage_spaces',
+    //     'amenities',
+    //     'status',
+    //     'is_featured',
+    //     'main_image_url',
+    // ];
+
+    // protected $casts = [
+    //     'price' => 'float',
+    //     'area' => 'float',
+    //     'is_featured' => 'boolean',
+    //     'amenities' => 'array',
+    // ];
+
+    // // Relação com o usuário que cadastrou (corretor)
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
+
+    // // Relação com a imobiliária proprietária do imóvel
+    // public function company()
+    // {
+    //     return $this->belongsTo(Company::class);
+    // }
 
     // protected $fillable = [
     //     'title',
@@ -124,48 +192,48 @@ class Property extends Model implements HasMedia
     // }
 
     // Media collections
-    public function registerMediaCollections(): void
-    {
-        $this->addMediaCollection('gallery')
-            ->useDisk('properties')
-            ->withResponsiveImages();
+    // public function registerMediaCollections(): void
+    // {
+    //     $this->addMediaCollection('gallery')
+    //         ->useDisk('properties')
+    //         ->withResponsiveImages();
 
-        $this->addMediaCollection('thumbnails')
-            ->useDisk('properties')
-            ->singleFile()
-            ->withResponsiveImages();
-    }
+    //     $this->addMediaCollection('thumbnails')
+    //         ->useDisk('properties')
+    //         ->singleFile()
+    //         ->withResponsiveImages();
+    // }
 
     // Scopes
-    public function scopeAvailable($query)
-    {
-        return $query->where('status', 'disponivel');
-    }
+    // public function scopeAvailable($query)
+    // {
+    //     return $query->where('status', 'disponivel');
+    // }
 
-    public function scopeFeatured($query)
-    {
-        return $query->where('featured', true);
-    }
+    // public function scopeFeatured($query)
+    // {
+    //     return $query->where('featured', true);
+    // }
 
-    // Acessores
-    public function getFormattedPriceAttribute()
-    {
-        return 'R$ ' . number_format($this->price, 2, ',', '.');
-    }
+    // // Acessores
+    // public function getFormattedPriceAttribute()
+    // {
+    //     return 'R$ ' . number_format($this->price, 2, ',', '.');
+    // }
 
-    public function getFormattedRentPriceAttribute()
-    {
-        return $this->rent_price ? 'R$ ' . number_format($this->rent_price, 2, ',', '.') : null;
-    }
+    // public function getFormattedRentPriceAttribute()
+    // {
+    //     return $this->rent_price ? 'R$ ' . number_format($this->rent_price, 2, ',', '.') : null;
+    // }
 
-    public function getFullAddressAttribute()
-    {
-        return "{$this->street}, {$this->number}" . ($this->complement ? " - {$this->complement}" : "") .
-            ", {$this->neighborhood}, {$this->city} - {$this->state}";
-    }
+    // public function getFullAddressAttribute()
+    // {
+    //     return "{$this->street}, {$this->number}" . ($this->complement ? " - {$this->complement}" : "") .
+    //         ", {$this->neighborhood}, {$this->city} - {$this->state}";
+    // }
 
-    public function getMainImageAttribute()
-    {
-        return $this->getFirstMediaUrl('thumbnails') ?: '/placeholder-property.jpg';
-    }
+    // public function getMainImageAttribute()
+    // {
+    //     return $this->getFirstMediaUrl('thumbnails') ?: '/placeholder-property.jpg';
+    // }
 }

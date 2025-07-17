@@ -19,7 +19,7 @@ class HomeController extends Controller
             abort(404, 'Configurações do site não encontradas para este tenant.');
         }
 
-        $featuredProperties = Property::where('is_featured', true)
+        $featuredProperties = Property::where('featured', true)
             ->when($tenant instanceof Company, function ($query) use ($tenant) {
                 return $query->where('company_id', $tenant->id);
             })
