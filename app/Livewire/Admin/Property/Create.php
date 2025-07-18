@@ -45,7 +45,7 @@ class Create extends Component
         ];
         $this->statusOptions = [
             ['id' => 'rascunho', 'name' => 'Rascunho'],
-            ['id' => 'disponivel', 'name' => 'Disponível'],
+            ['id' => 'available', 'name' => 'Disponível'],
             ['id' => 'vendido', 'name' => 'Vendido'],
             ['id' => 'alugado', 'name' => 'Alugado']
         ];
@@ -106,7 +106,7 @@ class Create extends Component
         $this->form->description = 'Descrição do imóvel';
         $this->form->type = 'casa';
         $this->form->purpose = 'ambos';
-        $this->form->status = 'disponivel';
+        $this->form->status = 'available';
         $this->form->price = 100000;
         $this->form->rent_price = 10000;
         $this->form->bedrooms = 2;

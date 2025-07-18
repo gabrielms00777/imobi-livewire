@@ -71,7 +71,7 @@ class PropertyForm extends Form
             // Opções de tipo de imóvel atualizadas para incluir 'sitio/chacara' e 'galpao'
             'type' => 'required|string|in:casa,apartamento,terreno,comercial,sitio/chacara,galpao,outro',
             'purpose' => 'required|string|in:venda,aluguel,ambos',
-            'status' => 'required|string|in:disponivel,vendido,alugado,rascunho',
+            'status' => 'required|string|in:available,vendido,alugado,rascunho',
 
             // // Validação condicional de preço e preço de aluguel
             'price' => [
@@ -246,7 +246,7 @@ class PropertyForm extends Form
                 // 'floors' => $this->floors,
                 // 'year_built' => $this->year_built,
                 'garage_spaces' => $this->garage_spaces,
-                'amenities' => $this->amenities, // Assumindo que o cast para array está no modelo Property
+                'amenities' => (array) $this->amenities, // Assumindo que o cast para array está no modelo Property
                 'status' => $this->status,
                 'featured' => $this->featured,
                 // 'latitude' => $this->latitude,

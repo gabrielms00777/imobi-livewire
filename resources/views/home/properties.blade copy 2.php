@@ -703,9 +703,9 @@
                                     const threshold = 50; // Limiar mínimo para considerar um swipe
                             
                                     if (diff > threshold) { // Swipe para a esquerda (próxima imagem)
-                                        this.currentImageIndex = (this.currentImageIndex + 1) % {{ $property->getMedia('gallery')->count() }};
+                                        this.currentImageIndex = (this.currentImageIndex + 1) % {{ count($property['imagens']) }};
                                     } else if (diff < -threshold) { // Swipe para a direita (imagem anterior)
-                                        this.currentImageIndex = (this.currentImageIndex - 1 + {{ $property->getMedia('gallery')->count() }}) % {{ $property->getMedia('gallery')->count() }};
+                                        this.currentImageIndex = (this.currentImageIndex - 1 + {{ count($property['imagens']) }}) % {{ count($property['imagens']) }};
                                     }
                                     // Reseta as posições de toque
                                     this.startX = 0;
@@ -715,13 +715,8 @@
                                 @touchmove.passive="handleTouchMove($event)" @touchend="handleTouchEnd()"
                                 class="carousel w-full h-full flex flex-col justify-center items-center">
                                 <div class="relative w-full h-full overflow-hidden">
-                                    {{-- Acessa a coleção de mídia 'gallery' do modelo Property --}}
-                                    @php
-                                        $galleryImages = $property->getMedia('gallery');
-                                        $imageCount = $galleryImages->count();
-                                    @endphp
-
-                                    @foreach ($galleryImages as $index => $image)
+                                    <!-- Container para os itens do carrossel, adicionado overflow-hidden para cortar as imagens fora da tela -->
+                                    @foreach ($property['imagens'] as $index => $image)
                                         <div x-show="currentImageIndex === {{ $index }}"
                                             x-transition:enter="transition ease-out duration-500"
                                             x-transition:enter-start="transform translate-x-full opacity-0"
@@ -730,23 +725,23 @@
                                             x-transition:leave-start="transform translate-x-0 opacity-100"
                                             x-transition:leave-end="transform -translate-x-full opacity-0"
                                             class="carousel-item absolute top-0 left-0 w-full h-full">
+                                            <!-- A imagem é exibida ou ocultada pelo x-show. A opacidade é controlada pelas bolinhas de navegação. -->
+                                            <!-- Novo div para manter a proporção de aspecto (16:9) -->
                                             <div class="relative w-full" style="padding-bottom: 56.25%;">
-                                                {{-- Usa $image->getUrl() para obter a URL da mídia --}}
-                                                {{-- Você pode especificar uma conversão se tiver uma definida na MediaLibrary, por exemplo, $image->getUrl('large') --}}
-                                                <img src="{{ $image->getUrl() }}" alt="{{ $property->title }}"
+                                                <img src="{{ $image }}" alt="{{ $property['titulo'] }}"
                                                     class="absolute top-0 left-0 w-full h-full object-cover" />
                                             </div>
 
-                                            {{-- As chamadas a count() foram substituídas pela variável $imageCount pré-calculada --}}
+                                            <!-- Controles de navegação (setas) -->
                                             <div
                                                 class="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
                                                 <button
-                                                    @click="currentImageIndex = (currentImageIndex - 1 + {{ $imageCount }}) % {{ $imageCount }}"
+                                                    @click="currentImageIndex = (currentImageIndex - 1 + {{ count($property['imagens']) }}) % {{ count($property['imagens']) }}"
                                                     class="btn btn-circle btn-sm">
                                                     <i class="fas fa-chevron-left"></i>
                                                 </button>
                                                 <button
-                                                    @click="currentImageIndex = (currentImageIndex + 1) % {{ $imageCount }}"
+                                                    @click="currentImageIndex = (currentImageIndex + 1) % {{ count($property['imagens']) }}"
                                                     class="btn btn-circle btn-sm">
                                                     <i class="fas fa-chevron-right"></i>
                                                 </button>
@@ -755,13 +750,15 @@
                                     @endforeach
                                 </div>
 
+                                <!-- Div para as bolinhas de paginação -->
                                 <div class="flex justify-center z-10 -mt-8 w-full py-2 gap-2">
-                                    @foreach ($galleryImages as $index => $image)
-                                        {{-- Usa a mesma coleção de imagens --}}
+                                    @foreach ($property['imagens'] as $index => $image)
                                         <button @click="currentImageIndex = {{ $index }}"
                                             :class="{
-                                                'opacity-100 bg-gray-700': currentImageIndex === {{ $index }},
-                                                'opacity-50 bg-gray-400': currentImageIndex !== {{ $index }}
+                                                'opacity-100 bg-gray-700': currentImageIndex ===
+                                                    {{ $index }},
+                                                'opacity-50 bg-gray-400': currentImageIndex !==
+                                                    {{ $index }}
                                             }"
                                             class="w-3 h-3 rounded-full transition-opacity duration-300"
                                             aria-label="Ir para imagem {{ $index + 1 }}"></button>
@@ -772,75 +769,57 @@
 
                             <!-- Badges -->
                             <div class="absolute w-10 h-10 top-4 left-4 flex gap-2">
-                                {{-- Verifica se o imóvel está marcado como 'featured' no banco de dados --}}
-                                @if ($property->featured)
+                                @if ($property['isFeatured'])
                                     <span class="badge badge-secondary">DESTAQUE</span>
                                 @endif
-                                {{-- Verifica se o imóvel foi criado nos últimos 30 dias para exibir como 'NOVO' --}}
-                                @if ($property->created_at->diffInDays(now()) < 30)
-                                    {{-- Ou outro período que você definir --}}
+                                @if ($property['isNew'])
                                     <span class="badge badge-accent">NOVO</span>
                                 @endif
                             </div>
                         </figure>
 
                         <div class="card-body lg:w-3/5 p-6">
-                            {{-- Preço do imóvel --}}
-                            <h3 class="card-title text-2xl">R$ {{ number_format($property->price, 2, ',', '.') }}
-                                {{-- Se for para aluguel, exibe o preço do aluguel --}}
-                                @if ($property->purpose === 'aluguel' || $property->purpose === 'ambos')
-                                    /mês
-                                @endif
+                            <h3 class="card-title text-2xl">R$ {{ number_format($property['preco'], 2, ',', '.') }}
                             </h3>
-                            {{-- Título do imóvel --}}
-                            <h4 class="text-xl font-semibold">{{ $property->title }}</h4>
-                            {{-- Endereço completo --}}
+                            <h4 class="text-xl font-semibold">{{ $property['titulo'] }}</h4>
                             <p class="flex items-center gap-2 text-gray-600">
                                 <i class="fas fa-map-marker-alt"></i>
-                                {{ $property->street }}, {{ $property->neighborhood }}, {{ $property->city }}
-                                -
-                                {{ $property->state }}
+                                {{ $property['endereco'] }}, {{ $property['bairro'] }}, {{ $property['cidade'] }} -
+                                {{ $property['estado'] }}
                             </p>
-                            {{-- Descrição do imóvel --}}
-                            <p>{{ $property->description }}</p>
+                            <p>{{ $property['descricao_curta'] }}</p>
 
-                            {{-- Detalhes do imóvel (quartos, banheiros, vagas, área) --}}
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 my-4">
                                 <div class="flex items-center gap-2">
                                     <i class="fas fa-bed"></i>
-                                    <span>{{ $property->bedrooms }}
-                                        Quarto{{ $property->bedrooms != 1 ? 's' : '' }}</span>
+                                    <span>{{ $property['quartos'] }}
+                                        Quarto{{ $property['quartos'] != 1 ? 's' : '' }}</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <i class="fas fa-bath"></i>
-                                    <span>{{ $property->bathrooms }}
-                                        Banheiro{{ $property->bathrooms != 1 ? 's' : '' }}</span>
+                                    <span>{{ $property['banheiros'] }}
+                                        Banheiro{{ $property['banheiros'] != 1 ? 's' : '' }}</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <i class="fas fa-car"></i>
-                                    <span>{{ $property->garage_spaces }}
-                                        Vaga{{ $property->garage_spaces != 1 ? 's' : '' }}</span>
+                                    <span>{{ $property['vagas'] }}
+                                        Vaga{{ $property['vagas'] != 1 ? 's' : '' }}</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <i class="fas fa-ruler-combined"></i>
-                                    <span>{{ $property->area }} m²</span>
+                                    <span>{{ $property['area'] }} m²</span>
                                 </div>
                             </div>
 
-                            {{-- Comodidades (amenities) --}}
                             <div class="flex flex-wrap gap-2 mb-4">
-                                {{-- @dd($property->amenities) --}}
-                                {{-- Itera sobre a propriedade 'amenities' que deve ser um array JSON no DB --}}
-                                @foreach ($property->amenities as $amenity)
-                                    <span class="badge badge-outline badge-primary">{{ $amenity }}</span>
+                                @foreach ($property['caracteristicas'] as $feature)
+                                    <span class="badge badge-outline badge-primary">{{ $feature }}</span>
                                 @endforeach
                             </div>
 
-                            {{-- Botões de ação --}}
                             <div class="card-actions justify-between items-center">
-                                {{-- Link "Ver Detalhes", agora usando o ID do modelo --}}
-                                <a href="{{ route('tenant.properties.show', ['tenantSlug' => $tenant->slug, 'property' => $property->slug]) }}" class="btn btn-primary">Ver
-                                    Detalhes</a>
+                                {{-- <a href="{{ route('imoveis.show', $property['id']) }}" class="btn btn-primary">Ver Detalhes</a> --}}
+                                <a class="btn btn-primary">Ver Detalhes</a>
                                 <button class="btn btn-circle btn-ghost">
                                     <i class="far fa-heart"></i>
                                 </button>

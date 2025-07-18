@@ -50,7 +50,7 @@ Route::prefix('{tenantSlug}')
     ->group(function () {
         Route::get('/', [HomeController::class, 'index'])->name('tenant.home');
         Route::get('/imoveis', [HomeController::class, 'properties'])->name('tenant.properties');
-        Route::get('/imoveis/{id}', [HomeController::class, 'property'])->name('tenant.property');
+        Route::get('/imoveis/{property}', [HomeController::class, 'property'])->name('tenant.properties.show');
 });
 
 Route::view('/', 'home.landing')->name('platform.home');
