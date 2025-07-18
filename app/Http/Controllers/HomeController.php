@@ -58,21 +58,19 @@ class HomeController extends Controller
             abort(404, 'Configurações do site não encontradas para este tenant.');
         }
 
-        // Se for requisição AJAX (filtros)
-        if ($request->ajax()) {
-            $properties = $this->filterProperties($request);
-            return response()->json([
-                'properties' => $properties,
-                'html' => view('partials.property-list', compact('properties'))->render()
-            ]);
-        }
 
         // Carrega todos os imóveis inicialmente
-        $properties = Property::where('company_id', $tenant->id)
-            ->where('status', 'available')
-            ->orderBy('is_featured', 'desc')
+        $properties = Property::where('status', 'available')
             ->orderBy('created_at', 'desc')
-            ->paginate(12);
+            ->when($tenant instanceof Company, function ($query) use ($tenant) {
+                return $query->where('company_id', $tenant->id);
+            })
+            ->when($tenant instanceof User, function ($query) use ($tenant) {
+                return $query->where('user_id', $tenant->id);
+            })
+            ->get();
+
+        dd($tenantSettings, $tenant, $properties);
 
         return view('home.properties', compact(
             'tenantSettings',
@@ -80,6 +78,37 @@ class HomeController extends Controller
             'properties'
         ));
     }
+    // public function properties(Request $request)
+    // {
+    //     $tenant = app('tenant');
+    //     $tenantSettings = $tenant->tenantSettings;
+
+    //     if (!$tenantSettings) {
+    //         abort(404, 'Configurações do site não encontradas para este tenant.');
+    //     }
+
+    //     // Se for requisição AJAX (filtros)
+    //     if ($request->ajax()) {
+    //         $properties = $this->filterProperties($request);
+    //         return response()->json([
+    //             'properties' => $properties,
+    //             'html' => view('partials.property-list', compact('properties'))->render()
+    //         ]);
+    //     }
+
+    //     // Carrega todos os imóveis inicialmente
+    //     $properties = Property::where('company_id', $tenant->id)
+    //         ->where('status', 'available')
+    //         ->orderBy('is_featured', 'desc')
+    //         ->orderBy('created_at', 'desc')
+    //         ->paginate(12);
+
+    //     return view('home.properties', compact(
+    //         'tenantSettings',
+    //         'tenant',
+    //         'properties'
+    //     ));
+    // }
 
     public function property($tenantSlug, $id)
     {
