@@ -58,7 +58,7 @@ class PropertySeeder extends Seeder
                 'suites' => 0,
                 'area' => 65.0,
                 'garage_spaces' => 1,
-                'amenities' => json_encode(['Academia', 'Salão de Festas']),
+                'amenities' => ['Academia', 'Salão de Festas'],
                 'status' => 'available',
                 'featured' => true, // Renomeado de is_featured
             ]);
@@ -90,7 +90,7 @@ class PropertySeeder extends Seeder
                 'suites' => 0,
                 'area' => 80.0,
                 'garage_spaces' => 1,
-                'amenities' => json_encode(['Quintal', 'Permite animais']),
+                'amenities' => ['Quintal', 'Permite animais'],
                 'status' => 'available',
                 'featured' => false,
             ]);
@@ -124,7 +124,7 @@ class PropertySeeder extends Seeder
                 'suites' => 1,
                 'area' => 120.0,
                 'garage_spaces' => 2,
-                'amenities' => json_encode(['Churrasqueira', 'Jardim']),
+                'amenities' => ['Churrasqueira', 'Jardim'],
                 'status' => 'available',
                 'featured' => true,
             ]);
@@ -155,7 +155,7 @@ class PropertySeeder extends Seeder
                 'suites' => 2,
                 'area' => 280.0,
                 'garage_spaces' => 3,
-                'amenities' => json_encode(['Piscina Privativa', 'Espaço Gourmet', 'Sauna']),
+                'amenities' => ['Piscina Privativa', 'Espaço Gourmet', 'Sauna'],
                 'status' => 'available',
                 'featured' => false,
             ]);
@@ -186,7 +186,7 @@ class PropertySeeder extends Seeder
                 'suites' => 1,
                 'area' => 110.0,
                 'garage_spaces' => 2,
-                'amenities' => json_encode(['Acesso à Praia', 'Piscina Condomínio', 'Academia']),
+                'amenities' => ['Acesso à Praia', 'Piscina Condomínio', 'Academia'],
                 'status' => 'available',
                 'featured' => true,
             ]);
@@ -217,7 +217,7 @@ class PropertySeeder extends Seeder
                 'suites' => null,
                 'area' => 45.0,
                 'garage_spaces' => 1,
-                'amenities' => json_encode(['Recepção 24h', 'Sala de Reuniões', 'Estacionamento Visitantes']),
+                'amenities' => ['Recepção 24h', 'Sala de Reuniões', 'Estacionamento Visitantes'],
                 'status' => 'available',
                 'featured' => false,
             ]);
@@ -251,7 +251,7 @@ class PropertySeeder extends Seeder
                 'suites' => null,
                 'area' => 500.0,
                 'garage_spaces' => null,
-                'amenities' => json_encode(['Portaria 24h', 'Área Verde']),
+                'amenities' => ['Portaria 24h', 'Área Verde'],
                 'status' => 'available',
                 'featured' => false,
             ]);
@@ -282,7 +282,7 @@ class PropertySeeder extends Seeder
                 'suites' => 3,
                 'area' => 15000.0, // 15.000 m²
                 'garage_spaces' => 4,
-                'amenities' => json_encode(['Piscina', 'Campo de Futebol', 'Pomar', 'Nascente', 'Casa de Hóspedes']),
+                'amenities' => ['Piscina', 'Campo de Futebol', 'Pomar', 'Nascente', 'Casa de Hóspedes'],
                 'status' => 'available',
                 'featured' => true,
             ]);
@@ -313,7 +313,7 @@ class PropertySeeder extends Seeder
                 'suites' => null,
                 'area' => 1200.0,
                 'garage_spaces' => 10, // Vagas para caminhões/veículos
-                'amenities' => json_encode(['Pé Direito Alto', 'Piso Industrial', 'Escritório', 'Docas de Carga']),
+                'amenities' => ['Pé Direito Alto', 'Piso Industrial', 'Escritório', 'Docas de Carga'],
                 'status' => 'available',
                 'featured' => false,
             ]);

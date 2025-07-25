@@ -221,25 +221,128 @@
         <input type="checkbox" id="mobile-menu" class="drawer-toggle">
         <div class="drawer-side z-50">
             <label for="mobile-menu" class="drawer-overlay"></label>
-            <div class="menu p-4 w-80 h-full bg-base-100 text-base-content">
+            <div class="menu p-4 w-80 min-h-full bg-base-100 text-base-content">
                 <div class="flex items-center justify-between mb-6">
-                    <a href="#" class="text-xl font-bold text-primary">Imobiliária<span
-                            class="text-secondary">Premium</span></a>
+                    {{-- Lembre-se de adaptar este link para o seu tenant --}}
+                    <a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug]) }}"
+                        class="text-xl font-bold text-primary">
+                        {{ $tenantSettings->site_name }}
+                    </a>
                     <label for="mobile-menu" class="btn btn-ghost btn-circle">
                         <i class="fas fa-times"></i>
                     </label>
                 </div>
 
-                <ul class="space-y-2">
-                    <li><a href="#" class="font-medium">Início</a></li>
-                    <li><a href="#destaques" class="font-medium">Destaques</a></li>
-                    <li><a href="#sobre" class="font-medium">Sobre</a></li>
-                    <li><a href="#contato" class="font-medium">Contato</a></li>
-                    <li><a href="/login" class="font-medium">Login</a></li>
-                </ul>
+                {{-- O formulário de filtros entra aqui --}}
+                <form method="GET" action="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}">
+                    <h3 class="text-xl font-bold mb-6">Filtros</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Localização</span>
+                            </label>
+                            <input type="text" name="location" placeholder="Cidade, Bairro, Estado"
+                                class="input input-bordered w-full" value="{{ $filters['location'] }}" />
+                        </div>
+
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Tipo de Imóvel</span>
+                            </label>
+                            <select class="select select-bordered w-full" name="type">
+                                <option value="">Todos</option>
+                                @foreach ($propertyTypes as $type)
+                                    <option value="{{ $type }}"
+                                        {{ $filters['type'] == $type ? 'selected' : '' }}>
+                                        {{ $type }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Quartos: {{ $filters['bedrooms'] }}+</span>
+                            </label>
+                            <input type="range" name="bedrooms" min="0" max="5" step="1"
+                                class="range range-primary range-xs" value="{{ $filters['bedrooms'] }}" />
+                            <div class="w-full flex justify-between text-xs px-2">
+                                <span>0</span>
+                                <span>1</span>
+                                <span>2</span>
+                                <span>3</span>
+                                <span>4</span>
+                                <span>5+</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Banheiros: {{ $filters['bathrooms'] }}+</span>
+                            </label>
+                            <input type="range" name="bathrooms" min="0" max="4" step="1"
+                                class="range range-primary range-xs" value="{{ $filters['bathrooms'] }}" />
+                            <div class="w-full flex justify-between text-xs px-2">
+                                <span>0</span>
+                                <span>1</span>
+                                <span>2</span>
+                                <span>3</span>
+                                <span>4+</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Vagas: {{ $filters['parking'] }}+</span>
+                            </label>
+                            <input type="range" name="parking" min="0" max="3" step="1"
+                                class="range range-primary range-xs" value="{{ $filters['parking'] }}" />
+                            <div class="w-full flex justify-between text-xs px-2">
+                                <span>0</span>
+                                <span>1</span>
+                                <span>2</span>
+                                <span>3+</span>
+                            </div>
+                        </div>
+
+                        {{-- <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Faixa de Preço (R$)</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <input type="number" name="min_price" placeholder="Mínimo"
+                                    class="input input-bordered w-full" value="{{ $filters['min_price'] }}" />
+                                <input type="number" name="max_price" placeholder="Máximo"
+                                    class="input input-bordered w-full" value="{{ $filters['max_price'] }}" />
+                            </div>
+                        </div> --}}
+
+                        {{-- <div>
+                            <label class="label">
+                                <span class="label-text font-medium">Área (m²)</span>
+                            </label>
+                            <div class="flex gap-2">
+                                <input type="number" name="min_area" placeholder="Mínimo"
+                                    class="input input-bordered w-full" value="{{ $filters['min_area'] }}" />
+                                <input type="number" name="max_area" placeholder="Máximo"
+                                    class="input input-bordered w-full" value="{{ $filters['max_area'] }}" />
+                            </div>
+                        </div> --}}
+
+                        <div class="pt-4 space-y-2">
+                            <button type="submit" class="btn btn-primary w-full">
+                                Aplicar Filtros
+                            </button>
+                            <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}"
+                                class="btn btn-outline w-full">
+                                Limpar Filtros
+                            </a>
+                        </div>
+                    </div>
+                </form>
 
                 <div class="divider my-4"></div>
 
+                {{-- Opcional: Manter links sociais e contato na sidebar --}}
                 <div class="flex justify-center gap-4 mb-6">
                     @if ($tenantSettings->social_facebook)
                         <a href="{{ $tenantSettings->social_facebook }}" class="btn btn-ghost btn-circle">
@@ -257,7 +360,6 @@
                         </a>
                     @endif
                 </div>
-
                 <a href="https://wa.me/{{ $tenantSettings->social_whatsapp }}" class="btn btn-primary gap-2">
                     <i class="fab fa-whatsapp"></i>
                     {{ $tenantSettings->contact_phone }}
@@ -268,9 +370,9 @@
 
     <!-- Sidebar Fixa (Desktop) -->
     <aside class="fixed-sidebar hidden mt-16 lg:flex flex-col p-6">
-        <form method="GET" action="{{ route('demo.properties') }}">
+        <form method="GET" action="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}">
             <!-- Logotipo -->
-            {{-- <a href="{{ route('demo.properties') }}" class="btn btn-ghost text-2xl font-bold text-primary mb-8">Imóveis.com</a> --}}
+            {{-- <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}" class="btn btn-ghost text-2xl font-bold text-primary mb-8">Imóveis.com</a> --}}
 
             <!-- Título Filtros -->
             <h3 class="text-xl font-bold mb-6">Filtros</h3>
@@ -278,13 +380,13 @@
             <!-- Formulário de Filtros -->
             <div class="space-y-6">
                 <!-- Localização -->
-                <div>
+                {{-- <div>
                     <label class="label">
                         <span class="label-text font-medium">Localização</span>
                     </label>
                     <input type="text" name="location" placeholder="Cidade, Bairro, Estado"
                         class="input input-bordered w-full" value="{{ $filters['location'] }}" />
-                </div>
+                </div> --}}
 
                 <!-- Tipo de Imóvel -->
                 <div>
@@ -349,7 +451,7 @@
                 </div>
 
                 <!-- Faixa de Preço -->
-                <div>
+                {{-- <div>
                     <label class="label">
                         <span class="label-text font-medium">Faixa de Preço (R$)</span>
                     </label>
@@ -359,10 +461,10 @@
                         <input type="number" name="max_price" placeholder="Máximo"
                             class="input input-bordered w-full" value="{{ $filters['max_price'] }}" />
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- Área -->
-                <div>
+                {{-- <div>
                     <label class="label">
                         <span class="label-text font-medium">Área (m²)</span>
                     </label>
@@ -372,7 +474,7 @@
                         <input type="number" name="max_area" placeholder="Máximo"
                             class="input input-bordered w-full" value="{{ $filters['max_area'] }}" />
                     </div>
-                </div>
+                </div> --}}
 
                 <!-- Características -->
                 <div>
@@ -380,6 +482,16 @@
                         <span class="label-text font-medium">Características</span>
                     </label>
                     <div class="grid grid-cols-2 gap-2">
+                        @foreach ($amenityOptions as $key => $label)
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" name="amenities[]" value="{{ $key }}"
+                                    class="checkbox checkbox-primary"
+                                    {{ in_array($key, $filters['amenities'] ?? []) ? 'checked' : '' }} />
+                                <span>{{ $label }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    {{-- <div class="grid grid-cols-2 gap-2">
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" name="features[]" value="Piscina"
                                 class="checkbox checkbox-primary"
@@ -416,15 +528,16 @@
                                 {{ in_array('Permite Animais', $filters['features']) ? 'checked' : '' }} />
                             <span>Permite Animais</span>
                         </label>
-                    </div>
+                    </div> --}}
                 </div>
 
                 <!-- Botões -->
-                <div class="pt-4 space-y-2">
+                <div class="mb-10 space-y-2">
                     <button type="submit" class="btn btn-primary w-full">
                         Aplicar Filtros
                     </button>
-                    <a href="{{ route('demo.properties') }}" class="btn btn-outline w-full">
+                    <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}"
+                        class="btn btn-outline w-full">
                         Limpar Filtros
                     </a>
                 </div>
@@ -435,9 +548,9 @@
     <!-- Área de Conteúdo Principal -->
     <main class="content-area mt-16">
         <!-- Navbar Mobile -->
-        <nav class="navbar fixed top-0 left-0 right-0 z-40 bg-base-100 shadow-md ">
+        {{-- <nav class="navbar fixed top-0 left-0 right-0 z-40 bg-base-100 shadow-md ">
             <div class="navbar-start">
-                <a href="{{ route('demo.properties') }}"
+                <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}"
                     class="btn btn-ghost text-xl font-bold text-primary">Imóveis.com</a>
             </div>
             <div class="navbar-end">
@@ -450,7 +563,7 @@
                         class="dropdown-content z-[1] mt-3 p-2 shadow bg-base-100 rounded-box w-screen max-h-[80vh] overflow-y-auto"
                         style="margin-left: -16rem;">
                         <!-- Filtros Mobile -->
-                        <form method="GET" action="{{ route('demo.properties') }}" class="p-4 space-y-4">
+                        <form method="GET" action="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}" class="p-4 space-y-4">
                             <!-- Localização -->
                             <div>
                                 <label class="label">
@@ -497,7 +610,7 @@
                                 <button type="submit" class="btn btn-primary w-full">
                                     Aplicar Filtros
                                 </button>
-                                <a href="{{ route('demo.properties') }}" class="btn btn-outline w-full">
+                                <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}" class="btn btn-outline w-full">
                                     Limpar Filtros
                                 </a>
                             </div>
@@ -505,7 +618,7 @@
                     </div>
                 </div>
             </div>
-        </nav>
+        </nav> --}}
 
         <!-- Hero Section com Formulário de Busca Integrado -->
         <div id="hero-section"
@@ -534,12 +647,13 @@
                 'max_price',
                 'min_area',
                 'max_area',
-                'features',
+                'amenities',
             ]))
             <section class="container mx-auto px-4 py-4 mb-8">
                 <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
                     <h2 class="text-xl font-bold text-gray-800">Resultados para:</h2>
-                    <a href="{{ route('demo.properties') }}" class="btn btn-sm btn-outline btn-error">
+                    <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}"
+                        class="btn btn-sm btn-outline btn-error">
                         Limpar Todos os Filtros
                     </a>
                 </div>
@@ -548,7 +662,7 @@
                     @if ($filters['search'])
                         <div class="badge badge-lg badge-info text-white">
                             <span>Busca: {{ $filters['search'] }}</span>
-                            <a href="{{ route('demo.properties', array_merge(request()->except('search'), ['page' => 1])) }}"
+                            <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug], array_merge(request()->except('search'), ['page' => 1])) }}"
                                 class="ml-1">
                                 <i class="fas fa-times"></i>
                             </a>
@@ -557,7 +671,7 @@
                     @if ($filters['location'])
                         <div class="badge badge-lg badge-info text-white">
                             <span>Local: {{ $filters['location'] }}</span>
-                            <a href="{{ route('demo.properties', array_merge(request()->except('location'), ['page' => 1])) }}"
+                            <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug], array_merge(request()->except('location'), ['page' => 1])) }}"
                                 class="ml-1">
                                 <i class="fas fa-times"></i>
                             </a>
@@ -566,7 +680,7 @@
                     @if ($filters['type'])
                         <div class="badge badge-lg badge-info text-white">
                             <span>Tipo: {{ $filters['type'] }}</span>
-                            <a href="{{ route('demo.properties', array_merge(request()->except('type'), ['page' => 1])) }}"
+                            <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug], array_merge(request()->except('type'), ['page' => 1])) }}"
                                 class="ml-1">
                                 <i class="fas fa-times"></i>
                             </a>
@@ -575,7 +689,7 @@
                     @if ($filters['bedrooms'] > 0)
                         <div class="badge badge-lg badge-info text-white">
                             <span>Quartos: {{ $filters['bedrooms'] }}+</span>
-                            <a href="{{ route('demo.properties', array_merge(request()->except('bedrooms'), ['page' => 1])) }}"
+                            <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug], array_merge(request()->except('bedrooms'), ['page' => 1])) }}"
                                 class="ml-1">
                                 <i class="fas fa-times"></i>
                             </a>
@@ -584,7 +698,7 @@
                     @if ($filters['bathrooms'] > 0)
                         <div class="badge badge-lg badge-info text-white">
                             <span>Banheiros: {{ $filters['bathrooms'] }}+</span>
-                            <a href="{{ route('demo.properties', array_merge(request()->except('bathrooms'), ['page' => 1])) }}"
+                            <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug], array_merge(request()->except('bathrooms'), ['page' => 1])) }}"
                                 class="ml-1">
                                 <i class="fas fa-times"></i>
                             </a>
@@ -593,7 +707,7 @@
                     @if ($filters['parking'] > 0)
                         <div class="badge badge-lg badge-info text-white">
                             <span>Vagas: {{ $filters['parking'] }}+</span>
-                            <a href="{{ route('demo.properties', array_merge(request()->except('parking'), ['page' => 1])) }}"
+                            <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug], array_merge(request()->except('parking'), ['page' => 1])) }}"
                                 class="ml-1">
                                 <i class="fas fa-times"></i>
                             </a>
@@ -607,7 +721,7 @@
                                 -
                                 {{ $filters['max_price'] ? 'R$ ' . number_format($filters['max_price'], 2, ',', '.') : 'Qualquer' }}
                             </span>
-                            <a href="{{ route('demo.properties', array_merge(request()->except(['min_price', 'max_price']), ['page' => 1])) }}"
+                            <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug], array_merge(request()->except(['min_price', 'max_price']), ['page' => 1])) }}"
                                 class="ml-1">
                                 <i class="fas fa-times"></i>
                             </a>
@@ -621,17 +735,18 @@
                                 -
                                 {{ $filters['max_area'] ? $filters['max_area'] . 'm²' : 'Qualquer' }}
                             </span>
-                            <a href="{{ route('demo.properties', array_merge(request()->except(['min_area', 'max_area']), ['page' => 1])) }}"
+                            <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug], array_merge(request()->except(['min_area', 'max_area']), ['page' => 1])) }}"
                                 class="ml-1">
                                 <i class="fas fa-times"></i>
                             </a>
                         </div>
                     @endif
-                    @if ($filters['features'] && count($filters['features']) > 0)
-                        @foreach ($filters['features'] as $feature)
+                    @if ($filters['amenities'] && count($filters['amenities']) > 0)
+                        @foreach ($filters['amenities'] as $amenityKey)
                             <div class="badge badge-lg badge-info text-white">
-                                <span>Característica: {{ $feature }}</span>
-                                <a href="{{ route('demo.properties', array_merge(request()->except('features'), ['features' => array_diff($filters['features'], [$feature])]), ['page' => 1]) }}"
+                                {{-- Aqui você precisará de um array de mapeamento para exibir o nome bonito --}}
+                                <span>Característica: {{ $amenityOptions[$amenityKey] ?? $amenityKey }}</span>
+                                <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug], array_merge(request()->except('amenities'), ['amenities' => array_diff($filters['amenities'], [$amenityKey])])) }}"
                                     class="ml-1">
                                     <i class="fas fa-times"></i>
                                 </a>
@@ -652,7 +767,7 @@
 
                 <div class="flex items-center gap-2">
                     <span class="text-sm font-medium">Ordenar por:</span>
-                    <form method="GET" action="{{ route('demo.properties') }}">
+                    <form method="GET" action="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}">
                         <!-- Manter todos os filtros na URL -->
                         @foreach (request()->except('sort_by', 'page') as $key => $value)
                             @if (is_array($value))
@@ -667,7 +782,8 @@
                         <select class="select select-bordered select-sm" name="sort_by"
                             onchange="this.form.submit()">
                             <option value="recent" {{ $sortBy == 'recent' ? 'selected' : '' }}>Mais Recentes</option>
-                            <option value="price-asc" {{ $sortBy == 'price-asc' ? 'selected' : '' }}>Preço (Menor para
+                            <option value="price-asc" {{ $sortBy == 'price-asc' ? 'selected' : '' }}>Preço (Menor
+                                para
                                 Maior)</option>
                             <option value="price-desc" {{ $sortBy == 'price-desc' ? 'selected' : '' }}>Preço (Maior
                                 para Menor)</option>
@@ -829,7 +945,6 @@
 
                             {{-- Comodidades (amenities) --}}
                             <div class="flex flex-wrap gap-2 mb-4">
-                                {{-- @dd($property->amenities) --}}
                                 {{-- Itera sobre a propriedade 'amenities' que deve ser um array JSON no DB --}}
                                 @foreach ($property->amenities as $amenity)
                                     <span class="badge badge-outline badge-primary">{{ $amenity }}</span>
@@ -839,7 +954,8 @@
                             {{-- Botões de ação --}}
                             <div class="card-actions justify-between items-center">
                                 {{-- Link "Ver Detalhes", agora usando o ID do modelo --}}
-                                <a href="{{ route('tenant.properties.show', ['tenantSlug' => $tenant->slug, 'property' => $property->slug]) }}" class="btn btn-primary">Ver
+                                <a href="{{ route('tenant.properties.show', ['tenantSlug' => $tenant->slug, 'property' => $property->slug]) }}"
+                                    class="btn btn-primary">Ver
                                     Detalhes</a>
                                 <button class="btn btn-circle btn-ghost">
                                     <i class="far fa-heart"></i>
@@ -852,7 +968,8 @@
                         <i class="fas fa-home text-4xl text-gray-400 mb-4"></i>
                         <h3 class="text-xl font-medium text-gray-600">Nenhum imóvel encontrado</h3>
                         <p class="text-gray-500 mt-2">Tente ajustar seus filtros de busca</p>
-                        <a href="{{ route('demo.properties') }}" class="btn btn-primary mt-4">Limpar Filtros</a>
+                        <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}"
+                            class="btn btn-primary mt-4">Limpar Filtros</a>
                     </div>
                 @endforelse
             </div>
@@ -977,7 +1094,7 @@
                         <i class="fas fa-home text-4xl text-gray-400 mb-4"></i>
                         <h3 class="text-xl font-medium text-gray-600">Nenhum imóvel encontrado</h3>
                         <p class="text-gray-500 mt-2">Tente ajustar seus filtros de busca</p>
-                        <a href="{{ route('demo.properties') }}" class="btn btn-primary mt-4">Limpar Filtros</a>
+                        <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}" class="btn btn-primary mt-4">Limpar Filtros</a>
                     </div>
                 @endforelse
             </div> --}}
@@ -986,7 +1103,7 @@
             @if ($totalPages > 1)
                 <div class="join flex justify-center mt-8">
                     <!-- Botão Anterior -->
-                    <a href="{{ route('demo.properties', array_merge(request()->except('page'), ['page' => $currentPage - 1])) }}"
+                    <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug], array_merge(request()->except('page'), ['page' => $currentPage - 1])) }}"
                         class="join-item btn {{ $currentPage == 1 ? 'btn-disabled' : '' }}">
                         «
                     </a>
@@ -998,14 +1115,14 @@
                     @endphp
 
                     @for ($i = $startPage; $i <= $endPage; $i++)
-                        <a href="{{ route('demo.properties', array_merge(request()->except('page'), ['page' => $i])) }}"
+                        <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug], array_merge(request()->except('page'), ['page' => $i])) }}"
                             class="join-item btn {{ $i == $currentPage ? 'btn-active' : '' }}">
                             {{ $i }}
                         </a>
                     @endfor
 
                     <!-- Botão Próximo -->
-                    <a href="{{ route('demo.properties', array_merge(request()->except('page'), ['page' => $currentPage + 1])) }}"
+                    <a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug], array_merge(request()->except('page'), ['page' => $currentPage + 1])) }}"
                         class="join-item btn {{ $currentPage == $totalPages ? 'btn-disabled' : '' }}">
                         »
                     </a>
@@ -1013,38 +1130,93 @@
             @endif
         </section>
 
-        <!-- Rodapé -->
-        <footer class="footer sm:footer-horizontal p-10 bg-neutral text-neutral-content mt-auto">
-            <div>
-                <span class="btn btn-ghost text-xl font-bold text-white">Imóveis.com</span>
-                <p>Encontre o imóvel perfeito para você e sua família.</p>
-            </div>
-            <div>
-                <span class="footer-title">Serviços</span>
-                <a class="link link-hover">Venda</a>
-                <a class="link link-hover">Aluguel</a>
-                <a class="link link-hover">Financiamento</a>
-                <a class="link link-hover">Avaliação</a>
-            </div>
-            <div>
-                <span class="footer-title">Empresa</span>
-                <a class="link link-hover">Sobre nós</a>
-                <a class="link link-hover">Contato</a>
-                <a class="link link-hover">Trabalhe conosco</a>
-            </div>
-            <div>
-                <span class="footer-title">Legal</span>
-                <a class="link link-hover">Termos de uso</a>
-                <a class="link link-hover">Política de privacidade</a>
-                <a class="link link-hover">Cookies</a>
-            </div>
-            <div>
-                <span class="footer-title">Redes Sociais</span>
-                <div class="grid grid-flow-col gap-4">
-                    <a><i class="fab fa-facebook-f text-xl"></i></a>
-                    <a><i class="fab fa-instagram text-xl"></i></a>
-                    <a><i class="fab fa-twitter text-xl"></i></a>
-                    <a><i class="fab fa-whatsapp text-xl"></i></a>
+        <footer class="footer p-10 bg-neutral text-neutral-content">
+            <div class="container mx-auto px-4">
+                {{-- <div class="grid grid-cols-1 md:grid-cols-3 gap-8"> --}}
+                <div class="flex flex-col md:flex-row justify-around gap-8 w-full">
+                    <div>
+                        {{-- Usamos o nome do site das configurações --}}
+                        <span class="footer-title">{{ $tenantSettings->site_name ?? 'Sua Imobiliária' }}</span>
+                        {{-- Usamos a descrição do site das configurações --}}
+                        <p>{{ $tenantSettings->site_description ?? 'Há mais de 20 anos ajudando pessoas a encontrar seu lar ideal.' }}
+                        </p>
+                        <div class="flex gap-4 mt-4">
+                            @if ($tenantSettings->social_facebook)
+                                <a href="{{ $tenantSettings->social_facebook }}"
+                                    class="btn btn-circle btn-sm btn-ghost" target="_blank"
+                                    rel="noopener noreferrer">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                            @endif
+                            @if ($tenantSettings->social_instagram)
+                                <a href="{{ $tenantSettings->social_instagram }}"
+                                    class="btn btn-circle btn-sm btn-ghost" target="_blank"
+                                    rel="noopener noreferrer">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            @endif
+                            @if ($tenantSettings->social_linkedin)
+                                <a href="{{ $tenantSettings->social_linkedin }}"
+                                    class="btn btn-circle btn-sm btn-ghost" target="_blank"
+                                    rel="noopener noreferrer">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                            @endif
+                            {{-- Adicionado link para Twitter/X, se configurado --}}
+                            @if ($tenantSettings->social_twitter)
+                                <a href="{{ $tenantSettings->social_twitter }}"
+                                    class="btn btn-circle btn-sm btn-ghost" target="_blank"
+                                    rel="noopener noreferrer">
+                                    <i class="fab fa-twitter"></i> {{-- Use fab fa-x-twitter se sua versão do Font Awesome suportar o novo logo --}}
+                                </a>
+                            @endif
+                            {{-- Adicionado link para Youtube, se configurado --}}
+                            @if ($tenantSettings->social_youtube)
+                                <a href="{{ $tenantSettings->social_youtube }}"
+                                    class="btn btn-circle btn-sm btn-ghost" target="_blank"
+                                    rel="noopener noreferrer">
+                                    <i class="fab fa-youtube"></i>
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="footer-title">Links Rápidos</span>
+                        <ul>
+                            <li><a href="#destaques" class="link link-hover">Imóveis em Destaque</a></li>
+                            <li><a href="#recentes" class="link link-hover">Imóveis Recentes</a></li>
+                            {{-- <li><a href="#sobre" class="link link-hover">Sobre Nós</a></li>
+                        <li><a href="#contato" class="link link-hover">Contato</a></li> --}}
+                        </ul>
+                    </div>
+
+                    <div>
+                        <span class="footer-title">Contato</span>
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-map-marker-alt mr-2"></i>
+                            {{-- Usamos o endereço de contato das configurações --}}
+                            <span>{{ $tenantSettings->contact_address }}</span>
+                        </div>
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-phone-alt mr-2"></i>
+                            {{-- Usamos o telefone de contato das configurações --}}
+                            <span>{{ $tenantSettings->contact_phone }}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            {{-- Usamos o e-mail de contato das configurações --}}
+                            <span>{{ $tenantSettings->contact_email }}</span>
+                        </div>
+                    </div>
+
+                    {{-- A seção de Newsletter continua comentada, se precisar, pode descomentar e configurá-la --}}
+                </div>
+
+                <div class="border-t w-full border-gray-700 mt-8 pt-8 text-center">
+                    {{-- Usamos o nome do site para o copyright --}}
+                    <p>&copy; {{ date('Y') }} {{ $tenantSettings->site_name }}. Todos os direitos reservados.
+                    </p>
                 </div>
             </div>
         </footer>

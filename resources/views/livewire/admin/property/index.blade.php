@@ -43,7 +43,7 @@
 
             {{-- Coluna Status --}}
             @scope('cell_status', $property)
-                <x-badge :value="$property->status" @class([
+                <x-badge :value=" ucfirst($property->status)" @class([
                     'badge-outline' => $property->status === 'rascunho',
                     'badge-primary' => $property->status === 'disponivel',
                     'badge-success' => $property->status === 'vendido',
@@ -58,14 +58,30 @@
 
             {{-- Coluna Ações --}}
             @scope('actions', $property)
+            {{-- @dd($property) --}}
                 <div class="flex items-center gap-2">
-                    <x-button icon="o-eye" link="/imovel/{{ $property->slug }}" target="_blank" class="btn-ghost btn-sm" tooltip="Visualizar no site" />
+                    <x-button icon="o-eye" link="{{ route('tenant.properties.show', ['tenantSlug' => ($property->user->slug ?? $property->company->slug), 'property' => $property->slug]) }}" target="_blank" class="btn-ghost btn-sm" tooltip="Visualizar no site" />
+                    {{-- <x-button icon="o-eye" link="{{ $property->user->slug ?? $property->company->slug }}/imovel/{{ $property->slug }}" target="_blank" class="btn-ghost btn-sm" tooltip="Visualizar no site" /> --}}
                     <x-button icon="o-pencil" link="/admin/properties/{{ $property->id }}/edit" class="btn-ghost btn-sm" tooltip="Editar" />
-                    <x-button icon="o-trash" wire:click="delete({{ $property->id }})" spinner class="btn-ghost btn-sm text-error" tooltip="Excluir" />
+                    <x-button icon="o-trash" wire:click="openDeleteModal({{ $property->id }})" spinner class="btn-ghost btn-sm text-error" tooltip="Excluir" />
                 </div>
             @endscope
         </x-table>
     </x-card>
+
+    <x-modal wire:model="deleteModal" title="Confirmar Exclusão" class="backdrop-blur" separator>
+        @if ($propertyToDelete)
+            <p>Tem certeza que deseja excluir o imóvel <b>#{{ $propertyToDelete->title }}</b>?</p>
+            <p class="mt-2">Esta ação é <b>irreversível</b>.</p>
+        @else
+            <p>Nenhum imóvel selecionado para exclusão.</p>
+        @endif
+
+        <x-slot:actions>
+            <x-button label="Cancelar" @click="$wire.deleteModal = false" />
+            <x-button label="Excluir" wire:click="delete" spinner class="btn-error" />
+        </x-slot:actions>
+    </x-modal>
 
     <x-drawer wire:model="drawer" title="Filtros Avançados" right separator with-close-button class="lg:w-1/3">
         <div class="grid gap-5">

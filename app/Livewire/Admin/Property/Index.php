@@ -33,6 +33,9 @@ class Index extends Component
     public $year_built_min = '';
     public $year_built_max = '';
 
+    public bool $deleteModal = false; 
+    public ?Property $propertyToDelete = null;
+
     // Clear filters
     public function clear(): void
     {
@@ -58,64 +61,25 @@ class Index extends Component
         $this->success('Filtros limpos com sucesso.', position: 'toast-bottom');
     }
 
-    // Delete action
-    public function delete($id): void
+    public function openDeleteModal(Property $property): void
     {
-        Property::find($id)->delete();
-        $this->success("Imóvel #$id deletado", position: 'toast-bottom');
+        $this->propertyToDelete = $property;
+        $this->deleteModal = true;
     }
 
-    // Table headers
-    // public function headers(): array
-    // {
-    //     return [
-    //         ['key' => 'id', 'label' => '#', 'class' => 'w-16'],
-    //         ['key' => 'thumbnail', 'label' => 'Foto', 'class' => 'w-20', 'sortable' => false],
-    //         ['key' => 'title', 'label' => 'Título', 'class' => 'w-64'],
-    //         ['key' => 'type', 'label' => 'Tipo'],
-    //         ['key' => 'price', 'label' => 'Preço'],
-    //         ['key' => 'status', 'label' => 'Status'],
-    //         ['key' => 'created_at', 'label' => 'Cadastrado em', 'sortBy' => 'created_at'],
-    //     ];
-    // }
-
-    // public function properties()
-    // {
-    //     $user = Auth::user();
-    //     if($user->slug){
-    //         return Property::query()
-    //         ->with('media')
-    //         ->where('user_id', $user->id)
-    //         ->when($this->search, function ($query) {
-    //             $query->where('title', 'like', "%{$this->search}%")
-    //                   ->orWhere('description', 'like', "%{$this->search}%");
-    //         })
-    //         ->when($this->status, fn($query) => $query->where('status', $this->status))
-    //         ->when($this->type, fn($query) => $query->where('type', $this->type))
-    //         ->when($this->bedrooms, fn($query) => $query->where('bedrooms', '>=', $this->bedrooms))
-    //         ->when($this->bathrooms, fn($query) => $query->where('bathrooms', '>=', $this->bathrooms))
-    //         ->when($this->price_min, fn($query) => $query->where('price', '>=', $this->price_min))
-    //         ->when($this->price_max, fn($query) => $query->where('price', '<=', $this->price_max))
-    //         ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
-    //         ->paginate(10);
-    //     } elseif($user->company_id){
-    //         return Property::query()
-    //             ->with('media')
-    //             ->where('company_id', $user->company_id)
-    //             ->when($this->search, function ($query) {
-    //                 $query->where('title', 'like', "%{$this->search}%")
-    //                       ->orWhere('description', 'like', "%{$this->search}%");
-    //             })
-    //             ->when($this->status, fn($query) => $query->where('status', $this->status))
-    //             ->when($this->type, fn($query) => $query->where('type', $this->type))
-    //             ->when($this->bedrooms, fn($query) => $query->where('bedrooms', '>=', $this->bedrooms))
-    //             ->when($this->bathrooms, fn($query) => $query->where('bathrooms', '>=', $this->bathrooms))
-    //             ->when($this->price_min, fn($query) => $query->where('price', '>=', $this->price_min))
-    //             ->when($this->price_max, fn($query) => $query->where('price', '<=', $this->price_max))
-    //             ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
-    //             ->paginate(10);
-    //     }
-    // }
+    // Delete action
+    public function delete(): void
+    {
+        if ($this->propertyToDelete) {
+            $id = $this->propertyToDelete->id;
+            $this->propertyToDelete->delete();
+            $this->success("Imóvel #$id deletado", position: 'toast-bottom');
+            $this->deleteModal = false;
+            $this->propertyToDelete = null; // Limpa a propriedade após a exclusão
+        }
+        // Property::find($id)->delete();
+        // $this->success("Imóvel #$id deletado", position: 'toast-bottom');
+    }
 
     public function headers(): array
     {
@@ -135,7 +99,7 @@ class Index extends Component
     public function properties()
     {
         $user = Auth::user();
-        $query = Property::query()->with('media');
+        $query = Property::query()->with('media','company', 'user');
 
         // Lógica de filtro por usuário/empresa (mantida como está no seu código original)
         if ($user->slug) {

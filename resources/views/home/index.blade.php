@@ -7,11 +7,14 @@
 
     {{-- SEO: Título da Página --}}
     {{-- Prioriza meta_title, depois site_name com sufixo, senão um padrão --}}
-    <title>{{ $tenantSettings->meta_title ?? ($tenantSettings->site_name ? $tenantSettings->site_name . ' - Encontre seu imóvel dos sonhos' : 'Sua Imobiliária - Encontre seu imóvel dos sonhos') }}</title>
+    <title>
+        {{ $tenantSettings->meta_title ?? ($tenantSettings->site_name ? $tenantSettings->site_name . ' - Encontre seu imóvel dos sonhos' : 'Sua Imobiliária - Encontre seu imóvel dos sonhos') }}
+    </title>
 
     {{-- SEO: Meta Descrição --}}
     {{-- Prioriza meta_description, depois site_description, senão um padrão --}}
-    <meta name="description" content="{{ $tenantSettings->meta_description ?? $tenantSettings->site_description ?? 'Encontre o imóvel perfeito para você com a nossa imobiliária. Temos apartamentos, casas, terrenos e mais.' }}">
+    <meta name="description"
+        content="{{ $tenantSettings->meta_description ?? ($tenantSettings->site_description ?? 'Encontre o imóvel perfeito para você com a nossa imobiliária. Temos apartamentos, casas, terrenos e mais.') }}">
 
     {{-- SEO: Meta Keywords --}}
     @if ($tenantSettings->meta_keywords)
@@ -25,8 +28,10 @@
     @endif
 
     {{-- Open Graph Meta Tags (para compartilhamento em redes sociais como Facebook, LinkedIn) --}}
-    <meta property="og:title" content="{{ $tenantSettings->meta_title ?? ($tenantSettings->site_name ? $tenantSettings->site_name . ' - Encontre seu imóvel dos sonhos' : 'Sua Imobiliária - Encontre seu imóvel dos sonhos') }}">
-    <meta property="og:description" content="{{ $tenantSettings->meta_description ?? $tenantSettings->site_description ?? 'Encontre o imóvel perfeito para você com a nossa imobiliária. Temos apartamentos, casas, terrenos e mais.' }}">
+    <meta property="og:title"
+        content="{{ $tenantSettings->meta_title ?? ($tenantSettings->site_name ? $tenantSettings->site_name . ' - Encontre seu imóvel dos sonhos' : 'Sua Imobiliária - Encontre seu imóvel dos sonhos') }}">
+    <meta property="og:description"
+        content="{{ $tenantSettings->meta_description ?? ($tenantSettings->site_description ?? 'Encontre o imóvel perfeito para você com a nossa imobiliária. Temos apartamentos, casas, terrenos e mais.') }}">
     {{-- A meta_image guarda o caminho do arquivo, então usamos Storage::url() --}}
     @if ($tenantSettings->meta_image)
         <meta property="og:image" content="{{ Storage::url($tenantSettings->meta_image) }}">
@@ -36,8 +41,10 @@
 
     {{-- Twitter Card Meta Tags (para compartilhamento no Twitter/X) --}}
     <meta name="twitter:card" content="summary_large_image"> {{-- Tipo de card, 'summary_large_image' é comum para imagens --}}
-    <meta name="twitter:title" content="{{ $tenantSettings->meta_title ?? ($tenantSettings->site_name ? $tenantSettings->site_name . ' - Encontre seu imóvel dos sonhos' : 'Sua Imobiliária - Encontre seu imóvel dos sonhos') }}">
-    <meta name="twitter:description" content="{{ $tenantSettings->meta_description ?? $tenantSettings->site_description ?? 'Encontre o imóvel perfeito para você com a nossa imobiliária. Temos apartamentos, casas, terrenos e mais.' }}">
+    <meta name="twitter:title"
+        content="{{ $tenantSettings->meta_title ?? ($tenantSettings->site_name ? $tenantSettings->site_name . ' - Encontre seu imóvel dos sonhos' : 'Sua Imobiliária - Encontre seu imóvel dos sonhos') }}">
+    <meta name="twitter:description"
+        content="{{ $tenantSettings->meta_description ?? ($tenantSettings->site_description ?? 'Encontre o imóvel perfeito para você com a nossa imobiliária. Temos apartamentos, casas, terrenos e mais.') }}">
     {{-- A meta_image guarda o caminho do arquivo, então usamos Storage::url() --}}
     @if ($tenantSettings->meta_image)
         <meta name="twitter:image" content="{{ Storage::url($tenantSettings->meta_image) }}">
@@ -59,7 +66,8 @@
         :root {
             --color-primary: {{ $tenantSettings->primary_color ?? '#3b82f6' }};
             --color-secondary: {{ $tenantSettings->secondary_color ?? '#f63b3b' }};
-            --color-neutral: {{ $tenantSettings->text_color ?? '#333333' }}; /* Adicionado fallback para text_color */
+            --color-neutral: {{ $tenantSettings->text_color ?? '#333333' }};
+            /* Adicionado fallback para text_color */
         }
 
         body {
@@ -107,8 +115,8 @@
                     <a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug]) }}" class="px-0">
                         <div class="flex items-center">
                             @if ($tenantSettings->site_logo && $tenantSettings->header_display_type == 'logo_and_name')
-                                <img src="{{ $tenantSettings->site_logo }}" alt="Logo {{ $tenantSettings->site_name }}"
-                                    class="h-8 w-auto mr-2 rounded-lg">
+                                <img src="{{ $tenantSettings->site_logo }}"
+                                    alt="Logo {{ $tenantSettings->site_name }}" class="h-8 w-auto mr-2 rounded-lg">
                                 @php
                                     $words = explode(' ', $tenantSettings->site_name); // Divide o nome em um array de palavras
                                     $firstWord = array_shift($words); // Pega a primeira palavra e a remove do array
@@ -120,8 +128,8 @@
                                     <span class="text-xl font-bold text-secondary">{{ $remainingWords }}</span>
                                 @endif
                             @elseif ($tenantSettings->site_logo && $tenantSettings->header_display_type == 'logo_only')
-                                <img src="{{ $tenantSettings->site_logo }}" alt="Logo {{ $tenantSettings->site_name }}"
-                                    class="h-10 w-auto rounded-lg">
+                                <img src="{{ $tenantSettings->site_logo }}"
+                                    alt="Logo {{ $tenantSettings->site_name }}" class="h-10 w-auto rounded-lg">
                             @elseif ($tenantSettings->site_name && $tenantSettings->header_display_type == 'name_only')
                                 @php
                                     $words = explode(' ', $tenantSettings->site_name); // Divide o nome em um array de palavras
@@ -406,15 +414,16 @@
                     <div class="property-card card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 animate-fade-in"
                         style="animation-delay: 0.1s">
                         <figure>
-                            <img src="{{ $property->main_image_url }}" alt="Casa moderna"
-                                class="h-64 w-full object-cover">
+                            <img src="{{ $property->getFirstMediaUrl('thumbnails') ?: asset('images/placeholder.jpg') }}"
+                                alt="Casa moderna" class="h-64 w-full object-cover">
                             <span class="badge badge-primary absolute top-4 right-4">Destaque</span>
                         </figure>
                         <div class="card-body">
                             <h3 class="card-title">{{ $property->title }}</h3>
                             <div class="flex items-center text-yellow-500 mb-2">
                                 <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
-                                <span>{{ $property->address }}</span>
+                                <span>{{ $property->street }}, {{ $property->neighborhood }}, {{ $property->city }} -
+                                    {{ $property->state }}</span>
                             </div>
                             <div class="flex justify-between items-center mb-4">
                                 <div>
@@ -433,7 +442,7 @@
                             <div class="flex justify-between items-center">
                                 <span class="text-xl font-bold text-primary">R$
                                     {{ number_format($property->price, 0, ',', '.') }}</span>
-                                <a href="{{ route('tenant.property', ['tenantSlug' => $tenant->slug, 'id' => $property->id]) }}"
+                                <a href="{{ route('tenant.properties.show', ['tenantSlug' => $tenant->slug, 'property' => $property->slug]) }}"
                                     class="btn btn-sm btn-secondary">Detalhes</a>
                             </div>
                         </div>
@@ -532,7 +541,7 @@
                         @endforeach
                     </div>
 
-                    <button class="btn btn-primary mt-8">Conheça nossa equipe</button>
+                    {{-- <button class="btn btn-primary mt-8">Conheça nossa equipe</button> --}}
                 </div>
             </div>
         </div>
@@ -550,7 +559,7 @@
                     <div class="property-card card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300 animate-fade-in"
                         style="animation-delay: 0.1s">
                         <figure>
-                            <img src="{{ $property->image ?? 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80' }}"
+                            <img src="{{ $property->getFirstMediaUrl('thumbnails') ?: asset('images/placeholder.jpg') }}"
                                 alt="{{ $property->title }}" class="h-48 w-full object-cover">
                             <span class="badge badge-secondary absolute top-4 right-4">Novo</span>
                         </figure>
@@ -558,7 +567,8 @@
                             <h3 class="card-title text-lg">{{ $property->title }}</h3>
                             <div class="flex items-center text-sm mb-2">
                                 <i class="fas fa-map-marker-alt mr-2 text-gray-500"></i>
-                                <span>{{ $property->address }}</span>
+                                <span>{{ $property->street }}, {{ $property->neighborhood }}, {{ $property->city }} -
+                                    {{ $property->state }}</span>
                             </div>
                             <div class="flex justify-between items-center text-sm mb-3">
                                 @if ($property->bedrooms > 0)
@@ -591,7 +601,7 @@
                             <div class="flex justify-between items-center">
                                 <span class="font-bold text-primary">R$
                                     {{ number_format($property->price, 0, ',', '.') }}</span>
-                                <a href="{{ route('tenant.property', ['tenantSlug' => $tenant->slug, 'id' => $property->id]) }}"
+                                <a href="{{ route('tenant.properties.show', ['tenantSlug' => $tenant->slug, 'property' => $property->slug]) }}"
                                     class="btn btn-xs btn-outline btn-primary">Detalhes</a>
                             </div>
                         </div>

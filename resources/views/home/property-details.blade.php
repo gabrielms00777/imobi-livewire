@@ -16,7 +16,7 @@
     <meta property="og:description"
         content="{{ $property->meta_description ?? \Illuminate\Support\Str::limit($property->description, 160) }}">
     <meta property="og:image"
-        content="{{ $property->main_image_url ?? ($tenantSettings->meta_image ?? asset('images/default-share-image.jpg')) }}">
+        content="{{ $property->getFirstMediaUrl('thumbnails') ?? ($tenantSettings->meta_image ?? asset('images/default-share-image.jpg')) }}">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta name="twitter:card" content="summary_large_image">
 
@@ -416,10 +416,11 @@
                 <div class="swiper-container w-full h-[300px] sm:h-[350px] md:h-[400px] lg:h-[450px] xl:h-[500px] pb-8"
                     x-ref="swiperContainer">
                     <div class="swiper-wrapper">
-                        @foreach ($propertyImages as $imageUrl)
+                        @foreach ($property->getMedia('gallery') as $image)
                             <div class="swiper-slide rounded-lg overflow-hidden flex items-center justify-center">
-                                <img src="{{ $imageUrl }}" class="w-full h-full object-cover"
-                                    alt="Imagem do Imóvel">
+                                {{-- A URL é obtida com o getUrl() da Spatie --}}
+                                <img src="{{ $image->getUrl() }}" class="w-full h-full object-cover"
+                                    alt="Imagem do Imóvel {{ $loop->index + 1 }}">
                             </div>
                         @endforeach
                     </div>
@@ -543,7 +544,7 @@
                     </div>
                     <div class="bg-base-200 p-4 rounded-lg text-center text-base-content">
                         <i class="fas fa-car text-2xl mb-2 text-primary"></i>
-                        <div>{{ $property->parking_spaces ?? '?' }} Vagas</div>
+                        <div>{{ $property->garage_spaces ?? '?' }} Vagas</div>
                     </div>
                 </div>
 
@@ -554,28 +555,34 @@
                     </p>
                 </div>
 
-                @php
-                    // Decodifica os destaques se forem uma string JSON, caso contrário usa um array vazio
-                    $highlights = is_string($property->highlights ?? null)
-                        ? json_decode($property->highlights, true)
-                        : $property->highlights ?? [];
-                @endphp
-
-                @if (!empty($highlights))
+                @if (!empty($property->amenities))
                     <div class="mb-8">
                         <h2 class="text-xl font-bold mb-4 text-base-content">Destaques</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            @foreach ($highlights as $highlight)
-                                <div class="flex items-center text-base-content/80">
-                                    <i class="fas fa-check-circle text-primary mr-2"></i>
-                                    <span>{{ $highlight }}</span>
-                                </div>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($property->amenities as $amenity)
+                                <span class="badge badge-lg badge-outline badge-primary gap-2">
+                                    {{-- Adicione ícones relevantes aqui, se possível --}}
+                                    {{-- Por exemplo, um ícone de piscina para "Piscina" --}}
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>{{ $amenity }}</span>
+                                </span>
                             @endforeach
                         </div>
                     </div>
+                    {{-- <div class="mb-8">
+                        <h2 class="text-xl font-bold mb-4 text-base-content">Destaques</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach ($property->amenities as $amenity)
+                                <div class="alert shadow-lg bg-base-100 border border-primary/20">
+                                    <i class="fas fa-check-circle text-primary"></i>
+                                    <span class="text-base-content font-medium">{{ $amenity }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div> --}}
                 @endif
 
-                <div class="mb-8">
+                {{-- <div class="mb-8">
                     <h2 class="text-xl font-bold mb-4 text-base-content">Localização</h2>
                     <div class="bg-base-200 rounded-xl overflow-hidden h-64">
                         @php
@@ -595,7 +602,7 @@
                         <iframe src="{{ $mapSrc }}" width="100%" height="100%" style="border:0;"
                             allowfullscreen="" loading="lazy" class="filter grayscale(50%) contrast(1.2)"></iframe>
                     </div>
-                </div>
+                </div> --}}
             </div>
 
             <!-- Sidebar - Contato e Informações -->
@@ -695,13 +702,35 @@
                                 <div>
                                     <p class="mb-4">Entre em contato com nosso corretor especializado para agendar
                                         uma visita ou obter mais informações.</p>
-                                    <button @click="showContactForm = true" class="btn btn-primary w-full mb-4">
+                                    {{-- <button @click="showContactForm = true" class="btn btn-primary w-full mb-4">
                                         <i class="fas fa-envelope mr-2"></i> Enviar Mensagem
-                                    </button>
+                                    </button> --}}
                                     {{-- O número de telefone do corretor deve vir do backend --}}
-                                    <a href="tel:{{ $broker->phone ?? '+5511999999999' }}"
-                                        class="btn btn-outline btn-primary w-full">
+                                    <a href="tel:{{ $tenant->phone ?? '+5511999999999' }}"
+                                        class="btn btn-outline btn-primary w-full mb-2">
                                         <i class="fas fa-phone-alt mr-2"></i> Ligar Agora
+                                    </a>
+                                    @php
+                                        // 1. Número de telefone com código do país
+                                        $phone = $tenant->phone ?? '+5511999999999';
+
+                                        // 2. URL completa da página do imóvel
+                                        $propertyUrl = route('tenant.properties.show', [
+                                            'tenantSlug' => $tenant->slug,
+                                            'property' => $property->slug,
+                                        ]);
+
+                                        // 3. Mensagem pré-preenchida, codificada para URL
+                                        $message = "Olá, vi o imóvel '{$property->title}' no seu site e tenho interesse. Poderia me dar mais informações?\n\nLink: {$propertyUrl}";
+                                        $encodedMessage = urlencode($message);
+
+                                        // 4. URL completa do WhatsApp
+                                        $whatsappUrl = "https://wa.me/{$phone}?text={$encodedMessage}";
+                                    @endphp
+
+                                    <a href="{{ $whatsappUrl }}" class="btn btn-success w-full" target="_blank"
+                                        rel="noopener noreferrer">
+                                        <i class="fab fa-whatsapp mr-2"></i> Conversar no WhatsApp
                                     </a>
                                 </div>
                             </template>
@@ -760,7 +789,7 @@
                                 'avatar_url' => 'https://randomuser.me/api/portraits/men/32.jpg', // Imagem padrão
                             ];
                     @endphp
-                    <div class="card bg-base-100 shadow-xl text-base-content">
+                    {{-- <div class="card bg-base-100 shadow-xl text-base-content">
                         <div class="card-body">
                             <h2 class="card-title mb-4">Corretor Responsável</h2>
                             <div class="flex items-center mb-4">
@@ -784,7 +813,6 @@
                                     <i class="fas fa-envelope text-primary mr-2"></i>
                                     <span>{{ $broker->email ?? 'contato@imobiliaria.com' }}</span>
                                 </div>
-                                {{-- Adicionar botão WhatsApp (opcional) --}}
                                 @if ($broker->phone)
                                     <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $broker->phone) }}?text=Ol%C3%A1%2C%20gostaria%20de%20mais%20informa%C3%A7%C3%B5es%20sobre%20o%20im%C3%B3vel%3A%20{{ urlencode($property->title ?? 'Im%C3%B3vel') }}%20-%20{{ urlencode(Request::url()) }}"
                                         target="_blank" class="btn btn-success btn-sm w-full mt-4">
@@ -793,7 +821,7 @@
                                 @endif
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
         </div>
@@ -875,8 +903,7 @@
                                     {{ number_format($similarProperty->price ?? 0, 2, ',', '.') }}</span>
                                 {{-- Link para a página de detalhes do imóvel similar --}}
                                 {{-- <a href="{{ route('tenant.property.show', ['tenantSlug' => $tenant->slug, 'propertyId' => $similarProperty->id]) }}" --}}
-                                <a 
-                                    class="btn btn-xs btn-outline btn-primary">Ver Detalhes</a>
+                                <a class="btn btn-xs btn-outline btn-primary">Ver Detalhes</a>
                             </div>
                         </div>
                     </div>
@@ -888,102 +915,93 @@
         </section>
     </main>
 
-    <!-- 7. Footer -->
     <footer class="footer p-10 bg-neutral text-neutral-content">
         <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {{-- <div class="grid grid-cols-1 md:grid-cols-3 gap-8"> --}}
+            <div class="flex flex-col md:flex-row justify-around gap-8 w-full">
                 <div>
-                    <span class="footer-title">Imobiliária</span>
-                    <p>Há mais de 20 anos ajudando pessoas a encontrar seu lar ideal.</p>
+                    {{-- Usamos o nome do site das configurações --}}
+                    <span class="footer-title">{{ $tenantSettings->site_name ?? 'Sua Imobiliária' }}</span>
+                    {{-- Usamos a descrição do site das configurações --}}
+                    <p>{{ $tenantSettings->site_description ?? 'Há mais de 20 anos ajudando pessoas a encontrar seu lar ideal.' }}
+                    </p>
                     <div class="flex gap-4 mt-4">
-                        <a href="#" class="btn btn-circle btn-sm btn-ghost">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="#" class="btn btn-circle btn-sm btn-ghost">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="#" class="btn btn-circle btn-sm btn-ghost">
-                            <i class="fab fa-linkedin-in"></i>
-                        </a>
+                        @if ($tenantSettings->social_facebook)
+                            <a href="{{ $tenantSettings->social_facebook }}" class="btn btn-circle btn-sm btn-ghost"
+                                target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                        @endif
+                        @if ($tenantSettings->social_instagram)
+                            <a href="{{ $tenantSettings->social_instagram }}" class="btn btn-circle btn-sm btn-ghost"
+                                target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        @endif
+                        @if ($tenantSettings->social_linkedin)
+                            <a href="{{ $tenantSettings->social_linkedin }}" class="btn btn-circle btn-sm btn-ghost"
+                                target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                        @endif
+                        {{-- Adicionado link para Twitter/X, se configurado --}}
+                        @if ($tenantSettings->social_twitter)
+                            <a href="{{ $tenantSettings->social_twitter }}" class="btn btn-circle btn-sm btn-ghost"
+                                target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-twitter"></i> {{-- Use fab fa-x-twitter se sua versão do Font Awesome suportar o novo logo --}}
+                            </a>
+                        @endif
+                        {{-- Adicionado link para Youtube, se configurado --}}
+                        @if ($tenantSettings->social_youtube)
+                            <a href="{{ $tenantSettings->social_youtube }}" class="btn btn-circle btn-sm btn-ghost"
+                                target="_blank" rel="noopener noreferrer">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        @endif
                     </div>
                 </div>
 
                 <div>
                     <span class="footer-title">Links Rápidos</span>
-                    <a href="#destaques" class="link link-hover">Imóveis em Destaque</a>
-                    <a href="#recentes" class="link link-hover">Imóveis Recentes</a>
-                    <a href="#sobre" class="link link-hover">Sobre Nós</a>
-                    <a href="#contato" class="link link-hover">Contato</a>
+                    <ul>
+                        <li><a href="#destaques" class="link link-hover">Imóveis em Destaque</a></li>
+                        <li><a href="#recentes" class="link link-hover">Imóveis Recentes</a></li>
+                        {{-- <li><a href="#sobre" class="link link-hover">Sobre Nós</a></li>
+                        <li><a href="#contato" class="link link-hover">Contato</a></li> --}}
+                    </ul>
                 </div>
 
                 <div>
                     <span class="footer-title">Contato</span>
                     <div class="flex items-center mb-2">
                         <i class="fas fa-map-marker-alt mr-2"></i>
-                        <span>Av. Paulista, 1000 - São Paulo/SP</span>
+                        {{-- Usamos o endereço de contato das configurações --}}
+                        <span>{{ $tenantSettings->contact_address }}</span>
                     </div>
                     <div class="flex items-center mb-2">
                         <i class="fas fa-phone-alt mr-2"></i>
-                        <span>(11) 9999-9999</span>
+                        {{-- Usamos o telefone de contato das configurações --}}
+                        <span>{{ $tenantSettings->contact_phone }}</span>
                     </div>
                     <div class="flex items-center">
                         <i class="fas fa-envelope mr-2"></i>
-                        <span>contato@imobiliaria.com</span>
+                        {{-- Usamos o e-mail de contato das configurações --}}
+                        <span>{{ $tenantSettings->contact_email }}</span>
                     </div>
                 </div>
 
-                <div>
-                    <span class="footer-title">Newsletter</span>
-                    <p>Assine nossa newsletter para receber novidades</p>
-                    <div class="form-control mt-4">
-                        <div class="relative">
-                            <input type="text" placeholder="seu@email.com"
-                                class="input input-bordered w-full pr-16">
-                            <button class="btn btn-primary absolute top-0 right-0 rounded-l-none">Assinar</button>
-                        </div>
-                    </div>
-                </div>
+                {{-- A seção de Newsletter continua comentada, se precisar, pode descomentar e configurá-la --}}
             </div>
 
-            <div class="border-t border-gray-700 mt-8 pt-8 text-center">
-                <p>&copy; 2023 Imobiliária. Todos os direitos reservados.</p>
+            <div class="border-t w-full border-gray-700 mt-8 pt-8 text-center">
+                {{-- Usamos o nome do site para o copyright --}}
+                <p>&copy; {{ date('Y') }} {{ $tenantSettings->site_name }}. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>
 
     <!-- Scripts adicionais -->
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.store('properties', {
-                featured: [{
-                        id: 1,
-                        title: 'Casa Moderna no Centro',
-                        location: 'Centro, São Paulo',
-                        bedrooms: 3,
-                        bathrooms: 2,
-                        area: 180,
-                        price: 850000,
-                        image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-                        featured: true
-                    },
-                    // Outros imóveis...
-                ],
-
-                recent: [{
-                        id: 4,
-                        title: 'Apartamento Compacto',
-                        location: 'Centro, Curitiba',
-                        bedrooms: 2,
-                        bathrooms: 1,
-                        area: 65,
-                        price: 320000,
-                        image: 'https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
-                        new: true
-                    },
-                    // Outros imóveis recentes...
-                ]
-            });
-        });
 
         // Observador de interseção para animações
         const animateOnScroll = () => {

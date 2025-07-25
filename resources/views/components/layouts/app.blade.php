@@ -41,28 +41,37 @@
 
             {{-- BRAND --}}
             {{-- <x-app-brand class="px-5 pt-4" /> --}}
+            {{-- User --}}
+            @php
+                $user = auth()->user();
+                $settings = $user->tenantSettings ?? ($user->company->tenantSettings ?? null);
+                $slug = $user->slug ?? $user->company->slug ?? null;
+                // dd($user, $settings);
+                // if (!$slug) {
+                //     $slug = $user->company->slug;
+                // }
+            @endphp
             <a href="/" class="btn btn-ghost px-5 mt-4">
                 <div class="flex items-center">
                     <div class="w-10 mr-2">
-                        <img src="https://placehold.co/400x400/3b82f6/white?text=IM" alt="Logo"
-                            class="w-full rounded-lg">
+                        @if ($settings && $settings->site_logo)
+                            <img src="{{ $settings->site_logo }}" alt="Logo"
+                                class="w-full rounded-lg">
+                        @endif
                     </div>
-                    <span class="text-xl font-bold text-primary">Imobiliária<span
-                            class="text-secondary">Premium</span></span>
+                    @if ($settings && $settings->site_name)
+                    <span class="text-xl font-bold text-primary">{{ $settings->site_name }}</span>
+                    @endif
+                    {{-- <img src="https://placehold.co/400x400/3b82f6/white?text=IM" alt="Logo"
+                    class="w-full rounded-lg"> --}}
+                        {{-- <span class="text-xl font-bold text-primary">Imobiliária<span
+                            class="text-secondary">Premium</span></span> --}}
                 </div>
             </a>
 
             {{-- MENU --}}
             <x-menu activate-by-route>
 
-                {{-- User --}}
-                @php
-                    $user = auth()->user();
-                    $slug = $user->slug ?? null;
-                    if(!$slug){
-                        $slug = $user->company->slug;
-                    }
-                @endphp
                 <x-menu-separator />
 
                 <x-list-item :item="$user" value="name" sub-value="email" no-separator no-hover

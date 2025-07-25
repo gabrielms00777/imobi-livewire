@@ -13,7 +13,6 @@ class HomeController extends Controller
     public function index()
     {
         $tenant = app('tenant');
-        // dd($tenant);
         $tenantSettings = $tenant->tenantSettings;
 
         if (!$tenantSettings) {
@@ -200,12 +199,10 @@ class HomeController extends Controller
         }
 
         // Filtro por características (amenities) - Assumindo JSON array na coluna 'amenities'
-        if ($features = $request->input('features')) {
-            if (is_array($features) && !empty($features)) {
-                foreach ($features as $feature) {
-                    // Para cada feature, verifica se a string 'feature' está contida no array JSON
-                    // Isso funciona bem se 'amenities' for um TEXT/JSON column e você armazene um array JSON.
-                    $propertiesQuery->whereJsonContains('amenities', $feature);
+        if ($amenities = $request->input('amenities')) {
+            if (is_array($amenities) && !empty($amenities)) {
+                foreach ($amenities as $amenity) {
+                    $propertiesQuery->whereJsonContains('amenities', $amenity);
                 }
             }
         }
@@ -252,20 +249,8 @@ class HomeController extends Controller
             'min_area' => $request->input('min_area'),
             'max_area' => $request->input('max_area'),
             'features' => $request->input('features', []),
+            'amenities' => $request->input('amenities', []),
         ]);
-        // $filters = [
-        //     'search' => $request->input('search'),
-        //     'location' => $request->input('location'),
-        //     'type' => $request->input('type'),
-        //     'bedrooms' => $request->input('bedrooms', 0),
-        //     'bathrooms' => $request->input('bathrooms', 0),
-        //     'parking' => $request->input('parking', 0),
-        //     'min_price' => $request->input('min_price'),
-        //     'max_price' => $request->input('max_price'),
-        //     'min_area' => $request->input('min_area'),
-        //     'max_area' => $request->input('max_area'),
-        //     'features' => $request->input('features', []),
-        // ];
 
         // dd($filters);
 
@@ -280,6 +265,25 @@ class HomeController extends Controller
         $totalProperties = $properties->total(); // Total de imóveis encontrados
         $totalPages = $properties->lastPage(); // Total de páginas
 
+        $amenityOptions = [
+            'Piscina' => 'Piscina',
+            'Churrasqueira' => 'Churrasqueira',
+            'Sacada' => 'Sacada',
+            'Academia' => 'Academia',
+            'Playground' => 'Playground',
+            'Portaria 24h' => 'Portaria 24h',
+            'Mobiliado' => 'Mobiliado',
+            'Ar Condicionado' => 'Ar Condicionado',
+            'Elevador' => 'Elevador',
+            'Lareira' => 'Lareira',
+            'Jardim' => 'Jardim',
+            'Área de Serviço' => 'Área de Serviço',
+            'Quadra Esportiva' => 'Quadra Esportiva',
+            'Salão de Festas' => 'Salão de Festas',
+            'Sauna' => 'Sauna',
+            'Varanda Gourmet' => 'Varanda Gourmet',
+        ];
+
         return view('home.properties', compact(
             'siteSettings',
             'tenantSettings',
@@ -290,7 +294,8 @@ class HomeController extends Controller
             'propertyTypes',
             'sortBy', // Passa o sortBy atual para a view
             'totalProperties',
-            'totalPages'
+            'totalPages',
+            'amenityOptions'
         ));
     }
     // public function properties(Request $request)
@@ -325,7 +330,7 @@ class HomeController extends Controller
     //     ));
     // }
 
-    public function property($tenantSlug, $id)
+    public function property($tenantSlug, $slug)
     {
         $tenant = app('tenant');
 
@@ -335,8 +340,8 @@ class HomeController extends Controller
             abort(404, 'Configurações do site não encontradas para este tenant.');
         }
 
-        // $property = Property::query()->where('slug', $slug)->firstOrFail();
-        $property = Property::query()->findOrFail($id);
+        $property = Property::query()->where('slug', $slug)->with('media')->firstOrFail();
+        // $property = Property::query()->findOrFail($id);
 
         if ($tenant instanceof Company && $property->company_id !== $tenant->id) {
             abort(404, 'Imóvel não encontrado para este usuario.');
@@ -346,15 +351,6 @@ class HomeController extends Controller
             abort(404, 'Imóvel não encontrado para este corretor.');
         }
 
-        $propertyImages = [
-            $property->main_image_url ?? 'https://via.placeholder.com/1200x800?text=Imagem+Principal+Padrao', // Sua imagem principal
-            'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', // Imagem de exemplo 1
-            'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', // Imagem de exemplo 2
-            'https://images.unsplash.com/photo-1580216643062-cf460548a66a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', // Imagem de exemplo 3
-            'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', // Imagem de exemplo 1
-            'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', // Imagem de exemplo 2
-            'https://images.unsplash.com/photo-1580216643062-cf460548a66a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', // Imagem de exemplo 3
-        ];
 
         // dd($tenantSettings, $property, $tenant);
 
@@ -362,7 +358,6 @@ class HomeController extends Controller
             'tenantSettings',
             'property',
             'tenant',
-            'propertyImages'
         ));
     }
 
