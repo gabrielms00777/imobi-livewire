@@ -33,6 +33,7 @@ Route::middleware('auth')->name('admin.')->prefix('admin')->group(function () {
 
     Route::get('/properties', Property\Index::class)->name('properties.index');
     Route::get('/properties/create', Property\Create::class)->name('properties.create');
+    Route::get('/properties/{property}/edit', Property\Edit::class)->name('properties.edit');
 
     Route::get('/users', User\Index::class)->name('users.index');
     Route::get('/users/create', User\Create::class)->name('users.create');

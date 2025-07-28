@@ -24,6 +24,12 @@ class Create extends Component
     public array $amenityOptions;
     public array $stateOptions;
 
+    // public bool $showMediaModal = false;
+
+    // Propriedades para lidar com novos uploads de arquivos temporários
+    public array $newlyUploadedImages = []; // Array para as novas imagens temporárias
+    public ?int $principalNewImageIndex = null; // Índice da nova imagem que será principal (baseado no array newlyUploadedImages)
+
     /**
      * O método mount é executado quando o componente é inicializado.
      * Aqui, vamos inicializar as opções dos selects.
@@ -131,32 +137,189 @@ class Create extends Component
         // $this->form->video_url = null;
         // $this->form->virtual_tour_url = null;
         $this->form->amenities = [];
+        $this->form->existingThumbnails = collect(); // Inicializa como coleção vazia
+        $this->form->existingGalleryImages = []; // Inicializa como coleção vazia
     }
-
-    /**
-     * Salva a propriedade chamando o método save do Form Object.
-     */
     public function save(): void
     {
-        $property = $this->form->save(); // Chama o método save do Form Object
-
-        $this->success('Imóvel cadastrado com sucesso!', redirectTo: route('admin.properties.index'));
         try {
+            $property = $this->form->save(); // Salva os dados básicos do imóvel
+
+            // Lidar com novas imagens temporárias (se houver)
+            if (!empty($this->newlyUploadedImages)) {
+                $principalFile = null;
+                $galleryFiles = [];
+
+                // Identifica qual arquivo, se houver, será a nova miniatura principal
+                if ($this->principalNewImageIndex !== null && isset($this->newlyUploadedImages[$this->principalNewImageIndex])) {
+                    $principalFile = $this->newlyUploadedImages[$this->principalNewImageIndex];
+                }
+
+                // Processa a nova imagem principal
+                if ($principalFile) {
+                    // Remove a miniatura antiga se existir (para o caso de edição)
+                    // Como este é um 'Create', não deveria ter miniatura antiga, mas é uma boa prática
+                    if ($property->getFirstMedia('thumbnails')) {
+                        $property->getFirstMedia('thumbnails')->delete();
+                    }
+                    $property->addMedia($principalFile)->toMediaCollection('thumbnails');
+                }
+
+                // Adiciona as demais imagens à galeria
+                foreach ($this->newlyUploadedImages as $index => $file) {
+                    // Se o arquivo não é o principal ou se não há um principal definido
+                    if ($index !== $this->principalNewImageIndex) {
+                        $property->addMedia($file)->toMediaCollection('gallery');
+                    }
+                }
+            }
+
+            $this->success('Imóvel cadastrado com sucesso!', redirectTo: route('admin.properties.index'));
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->error('Houve um erro na validação. Verifique os campos.');
-            // O Livewire automaticamente exibirá os erros de validação ao lado dos campos.
-            Log::error('Erro de validação ao salvar imóvel: ' . $e->getMessage(), ['errors' => $e->errors()]);
         } catch (\Exception $e) {
             $this->error('Ocorreu um erro ao salvar: ' . $e->getMessage());
-            Log::error('Erro geral ao salvar imóvel: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Erro ao salvar imóvel: ' . $e->getMessage(), ['exception' => $e]);
         }
     }
 
     /**
-     * Remove uma imagem da galeria (para edição).
+     * Define uma imagem existente como principal.
      * @param int $mediaId
      * @return void
      */
+    public function setMediaAsPrincipal(int $mediaId): void
+    {
+        if ($this->form->property) {
+            try {
+                $media = $this->form->property->media()->find($mediaId);
+                if ($media) {
+                    // Remove a miniatura atual, se houver
+                    if ($this->form->property->getFirstMedia('thumbnails')) {
+                        $this->form->property->getFirstMedia('thumbnails')->delete();
+                    }
+                    // Move a imagem da galeria para a coleção de miniaturas
+                    $media->move('thumbnails');
+                    $this->form->loadExistingMedia(); // Recarrega as mídias para atualizar a UI
+                    $this->success('Imagem definida como principal com sucesso!');
+                }
+            } catch (\Exception $e) {
+                $this->error('Erro ao definir imagem como principal: ' . $e->getMessage());
+                Log::error('Erro ao definir imagem como principal: ' . $e->getMessage(), ['exception' => $e]);
+            }
+        } else {
+            $this->error('Erro: Propriedade não carregada.');
+        }
+    }
+
+    /**
+     * Remove uma imagem (seja miniatura ou da galeria).
+     * @param int $mediaId
+     * @return void
+     */
+    public function removeMedia(int $mediaId): void
+    {
+        if ($this->form->property) {
+            try {
+                $media = $this->form->property->media()->find($mediaId);
+                if ($media) {
+                    $media->delete();
+                    $this->form->loadExistingMedia(); // Recarrega as mídias para atualizar a UI
+                    $this->success('Imagem removida com sucesso!');
+                }
+            } catch (\Exception $e) {
+                $this->error('Erro ao remover imagem: ' . $e->getMessage());
+                Log::error('Erro ao remover imagem: ' . $e->getMessage(), ['exception' => $e]);
+            }
+        } else {
+            $this->error('Erro: Propriedade não carregada.');
+        }
+    }
+
+
+    // public function save(): void
+    // {
+    //     $property = $this->form->save(); // Chama o método save do Form Object
+
+    //     $this->success('Imóvel cadastrado com sucesso!', redirectTo: route('admin.properties.index'));
+    //     try {
+    //     } catch (\Illuminate\Validation\ValidationException $e) {
+    //         $this->error('Houve um erro na validação. Verifique os campos.');
+    //         // O Livewire automaticamente exibirá os erros de validação ao lado dos campos.
+    //         Log::error('Erro de validação ao salvar imóvel: ' . $e->getMessage(), ['errors' => $e->errors()]);
+    //     } catch (\Exception $e) {
+    //         $this->error('Ocorreu um erro ao salvar: ' . $e->getMessage());
+    //         Log::error('Erro geral ao salvar imóvel: ' . $e->getMessage(), ['exception' => $e]);
+    //     }
+    // }
+
+    public function openMediaModal(): void
+    {
+        $this->form->reset(['newThumbnail', 'newGalleryImages', 'isNewImagePrincipal', 'principalImageIndex']);
+        $this->showMediaModal = true;
+    }
+
+    public function closeMediaModal(): void
+    {
+        $this->showMediaModal = false;
+        $this->form->reset(['newThumbnail', 'newGalleryImages', 'isNewImagePrincipal', 'principalImageIndex']); // Limpa uploads temporários ao fechar
+    }
+
+    public function saveNewMediaFromModal(): void
+    {
+        try {
+            // A validação 'newGalleryImages.*' também é executada aqui pelo Livewire
+            // antes de passar os arquivos para o Form Object se estiver no rules() do Form Object.
+            // Se preferir validação específica de upload aqui:
+            $this->validate([
+                'form.newThumbnail' => 'nullable|image|max:2048',
+                'form.newGalleryImages.*' => 'nullable|image|max:2048',
+            ]);
+
+            // Se o imóvel ainda não existe, salva o imóvel primeiro
+            if (!$this->form->property || !$this->form->property->exists) {
+                // Valida e salva os dados básicos do imóvel primeiro
+                $this->form->validate();
+                $this->form->save(); // Isso vai criar o imóvel e anexá-lo ao $this->form->property
+            }
+
+            // Agora que o imóvel existe (ou foi criado), o método save() do Form Object
+            // pode lidar com o upload das mídias.
+            $this->form->save(); // O método save() do form agora lida com os uploads de mídia
+
+            $this->success('Mídia adicionada com sucesso!', position: 'toast-top');
+            $this->closeMediaModal();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->error('Erro de validação ao adicionar mídia. Verifique os campos.', position: 'toast-top');
+            // Os erros serão exibidos automaticamente ao lado dos campos do formulário
+        } catch (\Exception $e) {
+            $this->error('Ocorreu um erro ao adicionar mídia: ' . $e->getMessage(), position: 'toast-top');
+            Log::error('Erro ao adicionar mídia no componente Create: ' . $e->getMessage(), ['exception' => $e]);
+        }
+    }
+
+    // public function removeMedia(int $mediaId): void
+    // {
+    //     try {
+    //         $this->form->removeMedia($mediaId);
+    //         $this->success('Imagem removida com sucesso!', position: 'toast-top');
+    //     } catch (\Exception $e) {
+    //         $this->error('Erro ao remover imagem: ' . $e->getMessage(), position: 'toast-top');
+    //         Log::error('Erro ao remover imagem no componente Create: ' . $e->getMessage(), ['media_id' => $mediaId, 'exception' => $e]);
+    //     }
+    // }
+
+    // public function setMediaAsPrincipal(int $mediaId): void
+    // {
+    //     try {
+    //         $this->form->setMediaAsPrincipal($mediaId);
+    //         $this->success('Imagem definida como principal!', position: 'toast-top');
+    //     } catch (\Exception $e) {
+    //         $this->error('Erro ao definir imagem como principal: ' . $e->getMessage(), position: 'toast-top');
+    //         Log::error('Erro ao definir imagem principal no componente Create: ' . $e->getMessage(), ['media_id' => $mediaId, 'exception' => $e]);
+    //     }
+    // }
+
     public function removeGalleryImage(int $mediaId): void
     {
         // Certifica-se de que a propriedade está carregada no formulário
@@ -178,10 +341,6 @@ class Create extends Component
         }
     }
 
-    /**
-     * Remove a miniatura principal (para edição).
-     * @return void
-     */
     public function removeThumbnail(): void
     {
         // Certifica-se de que a propriedade está carregada no formulário
@@ -202,9 +361,6 @@ class Create extends Component
         }
     }
 
-    /**
-     * Renderiza a view do componente.
-     */
     public function render()
     {
         return view('livewire.admin.property.create');

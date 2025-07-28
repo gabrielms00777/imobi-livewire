@@ -63,6 +63,10 @@ class PropertyForm extends Form
     public $thumbnail; // Para upload de arquivo Livewire
     public ?array $galleryImages = []; // Array de arquivos para galeria
 
+
+    // Propriedade para controlar a visibilidade do modal
+    public bool $showMediaModal = false;
+
     protected function rules(): array
     {
         return [

@@ -4,17 +4,19 @@
 @endassets
 
 <div>
-    <x-header title="Editar Imóvel" separator>
+    <x-header title="Cadastrar Novo Imóvel" separator>
         <x-slot:actions>
             <x-button label="Cancelar" link="{{ route('admin.properties.index') }}" icon="o-arrow-uturn-left"
                 class="btn-ghost" />
         </x-slot:actions>
     </x-header>
 
+    {{-- O form wire:submit="save" agora chama o método save do componente, que por sua vez chama o form->save() --}}
     <x-form wire:submit="save">
         {{-- Seção de Informações Básicas --}}
         <x-card title="Informações Básicas" shadow separator>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {{-- Todos os inputs agora usam `form.` prefixo --}}
                 <x-input label="Título*" wire:model="form.title" placeholder="Ex: Casa moderna com piscina no centro" />
                 <x-textarea label="Descrição*" wire:model="form.description"
                     placeholder="Descreva detalhadamente o imóvel..." rows="5" />
@@ -135,112 +137,79 @@
             }">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {{-- CEP como primeiro campo --}}
-                    <x-input label="CEP*" wire:model.live="form.zip_code" placeholder="Ex: 14000-000" x-mask="99999-999"
-                        x-on:blur="searchCep($el.value)" x-bind:loading="cepSearching" />
+                    {{-- <x-input label="CEP*" wire:model.live="form.zip_code" placeholder="Ex: 14000-000" x-mask="99999-999"
+                        x-on:blur="searchCep($el.value)" :loading="cepSearching" />
                     <x-input label="Rua*" wire:model="form.street" placeholder="Ex: Av. Brasil"
-                        x-bind:loading="cepSearching" />
+                        :loading="cepSearching" />
                     <x-input label="Número*" wire:model="form.number" placeholder="Ex: 123" />
                     <x-input label="Complemento" wire:model="form.complement" placeholder="Ex: Bloco A, Apartamento 101" />
                     <x-input label="Bairro*" wire:model="form.neighborhood" placeholder="Ex: Centro"
-                        x-bind:loading="cepSearching" />
+                        :loading="cepSearching" />
                     <x-input label="Cidade*" wire:model="form.city" placeholder="Ex: São Paulo"
-                        x-bind:loading="cepSearching" />
+                        :loading="cepSearching" />
                     <x-select label="Estado*" wire:model="form.state" :options="$stateOptions"
-                        placeholder="Selecione o estado..." x-bind:loading="cepSearching" />
+                        placeholder="Selecione o estado..." :loading="cepSearching" />
                     <x-input label="Latitude" wire:model="form.latitude" type="number" step="any"
-                        x-bind:loading="addressSearching" />
+                        :loading="addressSearching" />
                     <x-input label="Longitude" wire:model="form.longitude" type="number" step="any"
-                        x-bind:loading="addressSearching" />
+                        :loading="addressSearching" /> --}}
                 </div>
             </div>
         </x-card>
 
         {{-- Seção de Mídia --}}
         <x-card title="Mídia" shadow separator class="mt-5">
-            <div x-data="{
-                newlySelectedFiles: [],
-                newlySelectedFilePreviews: [],
-                principalNewImageIndex: @entangle('principalNewImageIndex').defer, // Sincroniza com a propriedade do componente Livewire
-                
-                handleNewFileChange(event) {
-                    this.newlySelectedFiles = Array.from(event.target.files);
-                    this.newlySelectedFilePreviews = [];
-                    this.newlySelectedFiles.forEach(file => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            this.newlySelectedFilePreviews.push(e.target.result);
-                        };
-                        reader.readAsDataURL(file);
-                    });
-                    // Reset principal selection if new files are added or if there's no new principal candidate
-                    this.principalNewImageIndex = null; 
-                    // Directly update the Livewire component property for new uploads
-                    @this.set('newlyUploadedImages', this.newlySelectedFiles);
-                },
-                setNewAsPrincipal(index) {
-                    if (this.principalNewImageIndex === index) {
-                        this.principalNewImageIndex = null; // Deselect if already principal
-                    } else {
-                        this.principalNewImageIndex = index; // Set as new principal
-                    }
-                },
-                isThisNewImagePrincipal(index) {
-                    return this.principalNewImageIndex !== null && this.principalNewImageIndex === index;
-                }
-            }">
-                <div class="grid grid-cols-1 gap-4">
-                    <x-file label="Adicionar Novas Imagens" x-ref="newFileInput" @change="handleNewFileChange($event)" multiple accept="image/png, image/jpeg" hint="Arraste e solte ou clique para adicionar imagens. Uma delas pode ser definida como principal." />
+            {{-- Slot de menu para o botão "Adicionar Imagens" --}}
+            <x-slot:menu>
+                <x-button label="Adicionar Imagens" icon="o-plus" class="btn-primary" @click="$wire.openMediaModal()" />
+            </x-slot:menu>
 
-                    {{-- Combined display for existing and new images --}}
-                    <div class="border border-base-300 p-4 rounded-lg bg-base-100 shadow-sm mt-4">
-                        <h5 class="text-lg font-semibold mb-3">Imagens do Imóvel</h5>
+            <div class="grid grid-cols-1 gap-4">
+                {{-- Exibição da Imagem Principal (Thumbnail) --}}
+                @if ($form->existingThumbnails->isNotEmpty())
+                    <div class="border border-base-300 p-4 rounded-lg bg-base-100 shadow-sm">
+                        <h5 class="text-lg font-semibold mb-3">Imagem Principal Atual</h5>
+                        <div class="relative group w-full max-w-xs mx-auto">
+                            {{-- Use getUrl() do objeto Media --}}
+                            <x-avatar :image="$form->existingThumbnails->first()->getUrl('thumb')" class="!w-full !h-48 !rounded object-cover" />
+                            <span class="absolute top-2 left-2 badge badge-success text-white">Principal</span>
+                            {{-- Chamando método no componente, que por sua vez chama o método no form --}}
+                            <x-button icon="o-trash" wire:click="removeMedia({{ $form->existingThumbnails->first()->id }})" spinner class="absolute top-1 right-1 btn-ghost btn-xs text-error opacity-0 group-hover:opacity-100 transition-opacity" tooltip="Remover imagem" />
+                        </div>
+                    </div>
+                @else
+                    <div class="text-center text-gray-500 py-4">
+                        Nenhuma imagem principal definida. Adicione uma!
+                    </div>
+                @endif
+
+                {{-- Exibição da Galeria de Imagens --}}
+                <div class="border border-base-300 p-4 rounded-lg bg-base-100 shadow-sm mt-4">
+                    <h5 class="text-lg font-semibold mb-3">Galeria de Imagens</h5>
+                    {{-- @if ($form->existingGalleryImages->isNotEmpty()) --}}
+                    @if ($form->existingGalleryImages && count($form->existingGalleryImages) > 0)
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                            {{-- Existing Principal Thumbnail --}}
-                            @if ($form->existingThumbnails->isNotEmpty())
-                                @php $thumbnail = $form->existingThumbnails->first(); @endphp
-                                <div class="relative group">
-                                    <x-avatar :image="$thumbnail->getUrl('thumb')" class="!w-full !h-32 !rounded object-cover" />
-                                    <span class="absolute top-2 left-2 badge badge-success text-white text-xs px-2 py-1">Principal</span>
-                                    <x-button icon="o-trash" wire:click="removeMedia({{ $thumbnail->id }})" spinner class="absolute top-1 right-1 btn-ghost btn-xs text-error opacity-0 group-hover:opacity-100 transition-opacity" tooltip="Remover imagem" />
-                                </div>
-                            @endif
-
-                            {{-- Existing Gallery Images --}}
                             @foreach ($form->existingGalleryImages as $image)
                                 <div class="relative group">
+                                    {{-- Use getUrl() do objeto Media --}}
                                     <x-avatar :image="$image->getUrl('thumb')" class="!w-full !h-32 !rounded object-cover" />
+                                    {{-- Botão para remover --}}
                                     <x-button icon="o-trash" wire:click="removeMedia({{ $image->id }})" spinner class="absolute top-1 right-1 btn-ghost btn-xs text-error opacity-0 group-hover:opacity-100 transition-opacity" tooltip="Remover imagem" />
+                                    {{-- Botão para definir como principal --}}
                                     <x-button icon="o-star" wire:click="setMediaAsPrincipal({{ $image->id }})" spinner class="absolute bottom-1 left-1 btn-ghost btn-xs text-warning opacity-0 group-hover:opacity-100 transition-opacity" tooltip="Definir como principal" />
                                 </div>
                             @endforeach
-
-                            {{-- New Image Previews --}}
-                            <template x-for="(preview, index) in newlySelectedFilePreviews" :key="'new-image-' + index">
-                                <div class="relative group border rounded-lg overflow-hidden">
-                                    <img :src="preview" class="w-full h-24 object-cover" alt="Pré-visualização da imagem" />
-                                    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button type="button" @click="setNewAsPrincipal(index)"
-                                            :class="{
-                                                'btn btn-circle btn-sm btn-success': isThisNewImagePrincipal(index),
-                                                'btn btn-circle btn-sm btn-ghost text-white': !isThisNewImagePrincipal(index)
-                                            }"
-                                            tooltip="Definir como Principal">
-                                            <i class="fas fa-star"></i>
-                                        </button>
-                                    </div>
-                                    <span x-show="isThisNewImagePrincipal(index)" class="absolute top-1 left-1 badge badge-success text-white text-xs px-2 py-1">Principal</span>
-                                </div>
-                            </template>
                         </div>
-                        <div x-show="$wire.form.existingThumbnails.length === 0 && $wire.form.existingGalleryImages.length === 0 && newlySelectedFilePreviews.length === 0" class="text-center text-gray-500 py-4">
-                            Nenhuma imagem adicionada ainda.
+                    @else
+                        <div class="text-center text-gray-500 py-4">
+                            Nenhuma imagem na galeria.
                         </div>
-                    </div>
-
-                    {{-- Vídeos --}}
-                    <x-input label="URL do Vídeo (Youtube/Vimeo)" wire:model="form.video_url" placeholder="https://youtu.be/..." />
-                    <x-input label="URL do Tour Virtual" wire:model="form.virtual_tour_url" placeholder="https://..." />
+                    @endif
                 </div>
+
+                {{-- Vídeos --}}
+                <x-input label="URL do Vídeo (Youtube/Vimeo)" wire:model="form.video_url" placeholder="https://youtu.be/..." />
+                <x-input label="URL do Tour Virtual" wire:model="form.virtual_tour_url" placeholder="https://..." />
             </div>
         </x-card>
 
@@ -262,7 +231,83 @@
         {{-- Botão de Submit --}}
         <div class="mt-5 flex justify-end gap-x-3">
             <x-button label="Cancelar" link="{{ route('admin.properties.index') }}" />
-            <x-button label="Atualizar" type="submit" icon="o-check" class="btn-primary" spinner="save" />
+            <x-button label="Salvar" type="submit" icon="o-check" class="btn-primary" spinner="save" />
         </div>
     </x-form>
+
+    {{-- Modal para Adicionar Mídia --}}
+    {{-- <x-modal wire:model="showMediaModal" title="Adicionar Novas Imagens" class="backdrop-blur">
+        <div x-data="{
+            selectedFiles: [],
+            filePreviews: [],
+            isPrincipal: @entangle('form.isNewImagePrincipal'), // Sincroniza com o Form Object
+            principalIndex: @entangle('form.principalImageIndex'), // Sincroniza com o Form Object
+            handleFileChange(event) {
+                this.selectedFiles = Array.from(event.target.files);
+                this.filePreviews = [];
+                this.selectedFiles.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.filePreviews.push(e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                });
+                // Reset principal selection if new files are added
+                this.isPrincipal = false;
+                this.principalIndex = null;
+            },
+            setAsPrincipal(index) {
+                if (this.principalIndex === index) {
+                    this.isPrincipal = false;
+                    this.principalIndex = null;
+                } else {
+                    this.isPrincipal = true;
+                    this.principalIndex = index;
+                }
+            },
+            // Função para enviar os arquivos para Livewire (componente)
+            uploadFiles() {
+                // Atribui os arquivos selecionados para as propriedades do Form Object
+                // O Livewire se encarrega de transformar File objects em TemporaryUploadedFile
+                if (this.selectedFiles.length === 1 && this.isPrincipal) {
+                    @this.set('form.newThumbnail', this.selectedFiles[0]);
+                    @this.set('form.newGalleryImages', []); // Garante que a galeria esteja vazia
+                } else {
+                    @this.set('form.newThumbnail', null); // Garante que a thumbnail esteja vazia
+                    @this.set('form.newGalleryImages', this.selectedFiles);
+                    // O índice principal é sincronizado via @entangle
+                }
+                // Chama o método no componente para salvar as novas mídias
+                @this.call('saveNewMediaFromModal');
+            }
+        }">
+            <div class="space-y-4">
+                <x-file label="Selecione as Imagens" x-ref="fileInput" @change="handleFileChange($event)" multiple accept="image/png, image/jpeg" hint="Selecione uma ou mais imagens para upload." />
+
+                <div x-show="filePreviews.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-4">
+                    <template x-for="(preview, index) in filePreviews" :key="index">
+                        <div class="relative group border rounded-lg overflow-hidden">
+                            <img :src="preview" class="w-full h-24 object-cover" alt="Pré-visualização da imagem" />
+                            <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button type="button" @click="setAsPrincipal(index)"
+                                    :class="{
+                                        'btn btn-circle btn-sm btn-success': isPrincipal && principalIndex === index,
+                                        'btn btn-circle btn-sm btn-ghost text-white': !isPrincipal || principalIndex !== index
+                                    }"
+                                    tooltip="Definir como Principal">
+                                    <i class="fas fa-star"></i>
+                                </button>
+                            </div>
+                            <span x-show="isPrincipal && principalIndex === index" class="absolute top-1 left-1 badge badge-success text-white">Principal</span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <x-slot:actions>
+                <x-button label="Cancelar" @click="$wire.closeMediaModal()" />
+                <x-button label="Salvar Imagens" class="btn-primary" @click="uploadFiles()" />
+            </x-slot:actions>
+        </div>
+    </x-modal> --}}
 </div>
