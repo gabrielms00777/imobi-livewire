@@ -102,7 +102,7 @@ class HomeController extends Controller
         // Inicia a query de imóveis
         $propertiesQuery = Property::query()
             ->with('media') // Carrega as mídias (imagens) relacionadas
-            ->where('status', 'available'); // Apenas imóveis disponíveis para o público
+            ->where('status', 'disponivel'); // Apenas imóveis disponíveis para o público
 
         // Aplica o filtro de tenant
         if ($tenant instanceof Company) {
@@ -340,8 +340,18 @@ class HomeController extends Controller
             abort(404, 'Configurações do site não encontradas para este tenant.');
         }
 
+        $properties = Property::query()
+            ->with('media') // Carrega as mídias (imagens) relacionadas
+            ->where('status', 'disponivel'); // Apenas imóveis disponíveis para o público
+
+        if ($tenant instanceof Company) {
+            $properties->where('company_id', $tenant->id);
+        } elseif ($tenant instanceof User) {
+            $properties->where('user_id', $tenant->id);
+        }
+
         $property = Property::query()->where('slug', $slug)->with('media')->firstOrFail();
-        // $property = Property::query()->findOrFail($id);
+        $properties = $properties->where('id', '!=', $property->id)->inRandomOrder()->limit(3)-> get();
 
         if ($tenant instanceof Company && $property->company_id !== $tenant->id) {
             abort(404, 'Imóvel não encontrado para este usuario.');
@@ -350,14 +360,13 @@ class HomeController extends Controller
         if ($tenant instanceof User && $property->user_id !== $tenant->id) {
             abort(404, 'Imóvel não encontrado para este corretor.');
         }
-
-
-        // dd($tenantSettings, $property, $tenant);
+        // dd($property, $properties);
 
         return view('home.property-details', compact(
             'tenantSettings',
             'property',
             'tenant',
+            'properties'
         ));
     }
 

@@ -105,11 +105,11 @@
 
 <body class="bg-base-100 text-neutral">
 
-    <header x-data="{ isScrolled: false }" @scroll.window="isScrolled = window.scrollY > 300"
+    {{-- <header x-data="{ isScrolled: false }" @scroll.window="isScrolled = window.scrollY > 300"
         class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
         :class="isScrolled ? 'bg-white shadow-md dark:bg-neutral' : 'bg-transparent'">
 
-        <div class="container mx-auto px-4">
+        <div class="mx-auto px-4">
             <div class="navbar">
                 <div class="flex-1">
                     <a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug]) }}" class="px-0">
@@ -124,7 +124,6 @@
                                 @endphp
                                 <span class="text-xl font-bold text-primary">{{ $firstWord ?? '' }}</span>
                                 @if (!empty($remainingWords))
-                                    {{-- Se houver palavras restantes, exibe-as em secondary --}}
                                     <span class="text-xl font-bold text-secondary">{{ $remainingWords }}</span>
                                 @endif
                             @elseif ($tenantSettings->site_logo && $tenantSettings->header_display_type == 'logo_only')
@@ -138,7 +137,6 @@
                                 @endphp
                                 <span class="text-xl font-bold text-primary">{{ $firstWord ?? '' }}</span>
                                 @if (!empty($remainingWords))
-                                    {{-- Se houver palavras restantes, exibe-as em secondary --}}
                                     <span class="text-xl font-bold text-secondary">{{ $remainingWords }}</span>
                                 @endif
                             @else
@@ -149,21 +147,6 @@
                 </div>
 
                 <div class="flex-none hidden lg:flex items-center gap-2">
-                    {{-- <nav class="flex items-center">
-                        <ul class="menu menu-horizontal px-1 gap-1">
-                            <li><a href="#" class="font-medium hover:text-primary">Início</a></li>
-                            <li><a href="#destaques" class="font-medium hover:text-primary">Destaques</a></li>
-                            <li><a href="#sobre" class="font-medium hover:text-primary">Sobre</a></li>
-                            <li><a href="#contato" class="font-medium hover:text-primary">Contato</a></li>
-                            @if (auth()->check())
-                                <li><a href="/admin" class="font-medium hover:text-primary">Dashboard</a></li>
-                            @else
-                                <li><a href="/login" class="font-medium hover:text-primary">Login</a></li>
-                            @endif
-                        </ul>
-                    </nav>
-
-                    <div class="divider divider-horizontal h-6 mx-2"></div> --}}
 
                     <div class="flex items-center gap-2 mr-4">
                         @if ($tenantSettings->social_facebook)
@@ -257,7 +240,9 @@
                 </a>
             </div>
         </div>
-    </header>
+    </header> --}}
+
+    <x-home.header :tenant="$tenant" :tenantSettings="$tenantSettings" />
 
     <section
         class="relative py-20 @if ($tenantSettings->hero_background_type === 'gradient') bg-linear-{{ $tenantSettings->hero_gradient_direction }} from-[{{ $tenantSettings->hero_gradient_from_color }}] to-[{{ $tenantSettings->hero_gradient_to_color }}] @else overflow-hidden @endif">
@@ -363,36 +348,47 @@
             <div class="card bg-base-100 shadow-xl">
                 <div class="card-body">
                     <h2 class="card-title mb-4">O que você está buscando?</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <select class="select select-bordered">
-                            <option disabled selected>Tipo de Imóvel</option>
-                            <option>Casa</option>
-                            <option>Apartamento</option>
-                            <option>Terreno</option>
-                            <option>Comercial</option>
-                        </select>
-                        <select class="select select-bordered">
-                            <option disabled selected>Localização</option>
-                            <option>São Paulo</option>
-                            <option>Rio de Janeiro</option>
-                            <option>Belo Horizonte</option>
-                        </select>
-                        <select class="select select-bordered">
-                            <option disabled selected>Faixa de Preço</option>
-                            <option>Até R$ 300.000</option>
-                            <option>R$ 300-600 mil</option>
-                            <option>R$ 600-1 milhão</option>
-                        </select>
-                        <select class="select select-bordered">
-                            <option disabled selected>Quartos</option>
-                            <option>1+</option>
-                            <option>2+</option>
-                            <option>3+</option>
-                        </select>
-                        <button class="btn btn-primary w-full">
-                            <i class="fas fa-search mr-2"></i> Buscar Imóveis
-                        </button>
-                    </div>
+                    <form action="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}" method="GET">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+
+                            <select name="type" class="select select-bordered">
+                                <option disabled selected>Tipo de Imóvel</option>
+                                <option value="casa">Casa</option>
+                                <option value="apartamento">Apartamento</option>
+                                <option value="terreno">Terreno</option>
+                                <option value="comercial">Comercial</option>
+                            </select>
+
+                            <select name="bathrooms" class="select select-bordered">
+                                <option disabled selected>Banheiros</option>
+                                <option value="1">1+</option>
+                                <option value="2">2+</option>
+                                <option value="3">3+</option>
+                                <option value="4">4+</option>
+                            </select>
+
+                            <select name="parking" class="select select-bordered">
+                                <option disabled selected>Vagas</option>
+                                <option value="1">1+</option>
+                                <option value="2">2+</option>
+                                <option value="3">3+</option>
+                                <option value="4">4+</option>
+                            </select>
+
+                            <select name="bedrooms" class="select select-bordered">
+                                <option disabled selected>Quartos</option>
+                                <option value="1">1+</option>
+                                <option value="2">2+</option>
+                                <option value="3">3+</option>
+                                <option value="4">4+</option>
+                            </select>
+
+                            <button type="submit" class="btn btn-primary w-full">
+                                <i class="fas fa-search mr-2"></i> Buscar Imóveis
+                            </button>
+
+                        </div>
+                    </form>
                     {{-- <div class="card-actions justify-end mt-4">
                             </div> --}}
                 </div>

@@ -43,7 +43,7 @@ return new class extends Migration
             $table->integer('garage_spaces')->nullable();
             $table->text('amenities')->nullable(); // Campo JSON para listar comodidades
 
-            $table->string('status')->default('available'); // Ex: 'available', 'pending', 'sold', 'rented'
+            $table->string('status')->default('disponivel'); // Ex: 'disponivel', 'pending', 'sold', 'rented'
             $table->boolean('featured')->default(false); // ESSENCIAL: Renomeado de 'is_featured'
 
             // main_image_url foi REMOVIDO pois o MediaLibrary será usado para gerenciar as imagens

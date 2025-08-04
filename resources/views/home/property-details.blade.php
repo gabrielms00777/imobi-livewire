@@ -110,7 +110,7 @@
 </head>
 
 <body class="bg-base-100 text-neutral">
-    <header x-data="{ isScrolled: false, showMobileMenu: false }" @scroll.window="isScrolled = window.scrollY > 50"
+    {{-- <header x-data="{ isScrolled: false }" @scroll.window="isScrolled = window.scrollY > 300"
         class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
         :class="isScrolled ? 'bg-white shadow-md dark:bg-neutral' : 'bg-transparent'">
 
@@ -119,52 +119,47 @@
                 <div class="flex-1">
                     <a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug]) }}" class="px-0">
                         <div class="flex items-center">
-                            {{-- Lógica para exibir Logo, Nome ou Ambos --}}
-                            @php
-                                $headerDisplayType = $tenantSettings->header_display_type ?? 'logo_only'; // Fallback
-                                $showLogo = in_array($headerDisplayType, ['logo_only', 'logo_and_name']);
-                                $showName = in_array($headerDisplayType, ['name_only', 'logo_and_name']);
-                                $siteNameParts = explode(' ', $tenantSettings->site_name ?? 'Seu Site');
-                            @endphp
-
-                            @if ($showLogo && $tenantSettings->site_logo)
+                            @if ($tenantSettings->site_logo && $tenantSettings->header_display_type == 'logo_and_name')
                                 <img src="{{ $tenantSettings->site_logo }}"
-                                    alt="Logo {{ $tenantSettings->site_name ?? 'Imobiliária' }}"
-                                    class="h-10 w-auto rounded-lg {{ $showName ? 'mr-2' : '' }}">
-                            @endif
-
-                            @if ($showName && $tenantSettings->site_name)
-                                <span class="text-xl font-bold text-primary">
-                                    {{ $siteNameParts[0] ?? '' }}
-                                    @if (isset($siteNameParts[1]))
-                                        <span class="text-secondary">{{ $siteNameParts[1] }}</span>
-                                    @endif
-                                </span>
-                            @endif
-
-                            {{-- Fallback se nada estiver configurado ou apenas um tipo de display sem os dados --}}
-                            @if ((!$showLogo || !$tenantSettings->site_logo) && (!$showName || !$tenantSettings->site_name))
+                                    alt="Logo {{ $tenantSettings->site_name }}" class="h-8 w-auto mr-2 rounded-lg">
+                                @php
+                                    $words = explode(' ', $tenantSettings->site_name); // Divide o nome em um array de palavras
+                                    $firstWord = array_shift($words); // Pega a primeira palavra e a remove do array
+                                    $remainingWords = implode(' ', $words); // Junta as palavras restantes de volta em uma string
+                                @endphp
+                                <span class="text-xl font-bold text-primary">{{ $firstWord ?? '' }}</span>
+                                @if (!empty($remainingWords))
+                                    {{-- Se houver palavras restantes, exibe-as em secondary 
+                                    <span class="text-xl font-bold text-secondary">{{ $remainingWords }}</span>
+                                @endif
+                            @elseif ($tenantSettings->site_logo && $tenantSettings->header_display_type == 'logo_only')
+                                <img src="{{ $tenantSettings->site_logo }}"
+                                    alt="Logo {{ $tenantSettings->site_name }}" class="h-10 w-auto rounded-lg">
+                            @elseif ($tenantSettings->site_name && $tenantSettings->header_display_type == 'name_only')
+                                @php
+                                    $words = explode(' ', $tenantSettings->site_name); // Divide o nome em um array de palavras
+                                    $firstWord = array_shift($words); // Pega a primeira palavra e a remove do array
+                                    $remainingWords = implode(' ', $words); // Junta as palavras restantes de volta em uma string
+                                @endphp
+                                <span class="text-xl font-bold text-primary">{{ $firstWord ?? '' }}</span>
+                                @if (!empty($remainingWords))
+                                    {{-- Se houver palavras restantes, exibe-as em secondary 
+                                    <span class="text-xl font-bold text-secondary">{{ $remainingWords }}</span>
+                                @endif
+                            @else
                                 <span class="text-xl font-bold text-primary">Seu Site</span>
                             @endif
                         </div>
                     </a>
                 </div>
 
-                {{-- Navegação principal (desktop) --}}
                 <div class="flex-none hidden lg:flex items-center gap-2">
-                    <nav class="flex items-center">
+                    {{-- <nav class="flex items-center">
                         <ul class="menu menu-horizontal px-1 gap-1">
-                            <li><a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug]) }}"
-                                    class="font-medium hover:text-primary">Início</a></li>
-                            {{-- Links para seções específicas da HOME --}}
-                            <li><a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug, '#destaques']) }}"
-                                    class="font-medium hover:text-primary">Destaques</a></li>
-                            <li><a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug, '#sobre']) }}"
-                                    class="font-medium hover:text-primary">Sobre</a></li>
-                            <li><a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug, '#contato']) }}"
-                                    class="font-medium hover:text-primary">Contato</a></li>
-                            <li><a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}"
-                                    class="font-medium hover:text-primary">Imóveis</a></li> {{-- Link para a página de listagem de imóveis --}}
+                            <li><a href="#" class="font-medium hover:text-primary">Início</a></li>
+                            <li><a href="#destaques" class="font-medium hover:text-primary">Destaques</a></li>
+                            <li><a href="#sobre" class="font-medium hover:text-primary">Sobre</a></li>
+                            <li><a href="#contato" class="font-medium hover:text-primary">Contato</a></li>
                             @if (auth()->check())
                                 <li><a href="/admin" class="font-medium hover:text-primary">Dashboard</a></li>
                             @else
@@ -173,140 +168,103 @@
                         </ul>
                     </nav>
 
-                    <div class="divider divider-horizontal h-6 mx-2"></div>
+                    <div class="divider divider-horizontal h-6 mx-2"></div> 
 
-                    {{-- Links de Redes Sociais --}}
                     <div class="flex items-center gap-2 mr-4">
                         @if ($tenantSettings->social_facebook)
-                            <a href="{{ $tenantSettings->social_facebook }}" target="_blank" rel="noopener noreferrer"
+                            <a href="{{ $tenantSettings->social_facebook }}"
                                 class="btn btn-ghost btn-circle btn-sm hover:text-primary">
                                 <i class="fab fa-facebook-f"></i>
                             </a>
                         @endif
                         @if ($tenantSettings->social_instagram)
-                            <a href="{{ $tenantSettings->social_instagram }}" target="_blank" rel="noopener noreferrer"
+                            <a href="{{ $tenantSettings->social_instagram }}"
                                 class="btn btn-ghost btn-circle btn-sm hover:text-primary">
                                 <i class="fab fa-instagram"></i>
                             </a>
                         @endif
                         @if ($tenantSettings->social_linkedin)
-                            <a href="{{ $tenantSettings->social_linkedin }}" target="_blank" rel="noopener noreferrer"
+                            <a href="{{ $tenantSettings->social_linkedin }}"
                                 class="btn btn-ghost btn-circle btn-sm hover:text-primary">
                                 <i class="fab fa-linkedin-in"></i>
                             </a>
                         @endif
+                        @if ($tenantSettings->social_youtube)
+                            <a href="{{ $tenantSettings->social_youtube }}"
+                                class="btn btn-ghost btn-circle btn-sm hover:text-primary">
+                                <i class="fab fa-youtube"></i>
+                            </a>
+                        @endif
                     </div>
 
-                    {{-- Botão WhatsApp --}}
-                    @if ($tenantSettings->social_whatsapp && $tenantSettings->contact_phone)
-                        <a href="https://wa.me/{{ preg_replace('/\D/', '', $tenantSettings->social_whatsapp) }}"
-                            target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm md:btn-md gap-2">
-                            <i class="fab fa-whatsapp"></i>
-                            <span class="hidden sm:inline">{{ $tenantSettings->contact_phone }}</span>
-                        </a>
-                    @endif
+                    <a href="https://wa.me/{{ $tenantSettings->social_whatsapp }}"
+                        class="btn btn-primary btn-sm md:btn-md gap-2">
+                        <i class="fab fa-whatsapp"></i>
+                        <span class="hidden sm:inline">{{ $tenantSettings->contact_phone }}</span>
+                    </a>
                 </div>
 
-                {{-- Botão do Menu Hamburguer (mobile) --}}
                 <div class="flex-none lg:hidden">
-                    <button @click="showMobileMenu = !showMobileMenu" class="btn btn-ghost btn-circle">
+                    <label for="mobile-menu" class="btn btn-ghost btn-circle">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
-                    </button>
+                    </label>
                 </div>
             </div>
         </div>
 
-        {{-- Overlay e Drawer para Mobile --}}
-        <div x-show="showMobileMenu" x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
-            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
-            x-transition:leave-end="opacity-0 -translate-y-4"
-            class="fixed inset-0 bg-base-300 bg-opacity-75 z-40 lg:hidden" @click="showMobileMenu = false"></div>
-        {{-- Fecha o menu ao clicar no overlay --}}
+        <input type="checkbox" id="mobile-menu" class="drawer-toggle">
+        <div class="drawer-side z-50">
+            <label for="mobile-menu" class="drawer-overlay"></label>
+            <div class="menu p-4 w-80 h-full bg-base-100 text-base-content">
+                <div class="flex items-center justify-between mb-6">
+                    <a href="#" class="text-xl font-bold text-primary">Imobiliária<span
+                            class="text-secondary">Premium</span></a>
+                    <label for="mobile-menu" class="btn btn-ghost btn-circle">
+                        <i class="fas fa-times"></i>
+                    </label>
+                </div>
 
-        <div x-show="showMobileMenu" x-transition:enter="transition ease-out duration-300 transform"
-            x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
-            x-transition:leave="transition ease-in duration-200 transform" x-transition:leave-start="translate-x-0"
-            x-transition:leave-end="-translate-x-full"
-            class="fixed top-0 left-0 w-80 h-full bg-base-100 text-base-content shadow-xl z-50 p-4 lg:hidden">
-            <div class="flex items-center justify-between mb-6">
-                {{-- Logo ou Nome do Site no Mobile Drawer --}}
-                <a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug]) }}"
-                    class="text-xl font-bold text-primary">
-                    @if ($showLogo && $tenantSettings->site_logo)
-                        <img src="{{ $tenantSettings->site_logo }}"
-                            alt="Logo {{ $tenantSettings->site_name ?? 'Imobiliária' }}"
-                            class="h-8 w-auto rounded-lg inline-block mr-2">
+                <ul class="space-y-2">
+                    <li><a href="#" class="font-medium">Início</a></li>
+                    <li><a href="#destaques" class="font-medium">Destaques</a></li>
+                    <li><a href="#sobre" class="font-medium">Sobre</a></li>
+                    <li><a href="#contato" class="font-medium">Contato</a></li>
+                    <li><a href="/login" class="font-medium">Login</a></li>
+                </ul>
+
+                <div class="divider my-4"></div>
+
+                <div class="flex justify-center gap-4 mb-6">
+                    @if ($tenantSettings->social_facebook)
+                        <a href="{{ $tenantSettings->social_facebook }}" class="btn btn-ghost btn-circle">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
                     @endif
-                    @if ($showName && $tenantSettings->site_name)
-                        {{ $siteNameParts[0] ?? '' }}
-                        @if (isset($siteNameParts[1]))
-                            <span class="text-secondary">{{ $siteNameParts[1] }}</span>
-                        @endif
+                    @if ($tenantSettings->social_instagram)
+                        <a href="{{ $tenantSettings->social_instagram }}" class="btn btn-ghost btn-circle">
+                            <i class="fab fa-instagram"></i>
+                        </a>
                     @endif
-                    @if ((!$showLogo || !$tenantSettings->site_logo) && (!$showName || !$tenantSettings->site_name))
-                        Seu Site
+                    @if ($tenantSettings->social_linkedin)
+                        <a href="{{ $tenantSettings->social_linkedin }}" class="btn btn-ghost btn-circle">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
                     @endif
-                </a>
-                <button @click="showMobileMenu = false" class="btn btn-ghost btn-circle">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
+                </div>
 
-            <ul class="space-y-2">
-                <li><a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug]) }}"
-                        @click="showMobileMenu = false" class="font-medium">Início</a></li>
-                <li><a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug, '#destaques']) }}"
-                        @click="showMobileMenu = false" class="font-medium">Destaques</a></li>
-                <li><a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug, '#sobre']) }}"
-                        @click="showMobileMenu = false" class="font-medium">Sobre</a></li>
-                <li><a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug, '#contato']) }}"
-                        @click="showMobileMenu = false" class="font-medium">Contato</a></li>
-                <li><a href="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}"
-                        @click="showMobileMenu = false" class="font-medium">Imóveis</a></li>
-                @if (auth()->check())
-                    <li><a href="/admin" @click="showMobileMenu = false" class="font-medium">Dashboard</a></li>
-                @else
-                    <li><a href="/login" @click="showMobileMenu = false" class="font-medium">Login</a></li>
-                @endif
-            </ul>
-
-            <div class="divider my-4"></div>
-
-            <div class="flex justify-center gap-4 mb-6">
-                @if ($tenantSettings->social_facebook)
-                    <a href="{{ $tenantSettings->social_facebook }}" target="_blank" rel="noopener noreferrer"
-                        class="btn btn-ghost btn-circle">
-                        <i class="fab fa-facebook-f"></i>
-                    </a>
-                @endif
-                @if ($tenantSettings->social_instagram)
-                    <a href="{{ $tenantSettings->social_instagram }}" target="_blank" rel="noopener noreferrer"
-                        class="btn btn-ghost btn-circle">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                @endif
-                @if ($tenantSettings->social_linkedin)
-                    <a href="{{ $tenantSettings->social_linkedin }}" target="_blank" rel="noopener noreferrer"
-                        class="btn btn-ghost btn-circle">
-                        <i class="fab fa-linkedin-in"></i>
-                    </a>
-                @endif
-            </div>
-
-            @if ($tenantSettings->social_whatsapp && $tenantSettings->contact_phone)
-                <a href="https://wa.me/{{ preg_replace('/\D/', '', $tenantSettings->social_whatsapp) }}"
-                    target="_blank" rel="noopener noreferrer" class="btn btn-primary gap-2">
+                <a href="https://wa.me/{{ $tenantSettings->social_whatsapp }}" class="btn btn-primary gap-2">
                     <i class="fab fa-whatsapp"></i>
                     {{ $tenantSettings->contact_phone }}
                 </a>
-            @endif
+            </div>
         </div>
-    </header>
+    </header> --}}
+
+    <x-home.header :tenant="$tenant" :tenantSettings="$tenantSettings" />
 
     <!-- Conteúdo Principal -->
     <main class="container mx-auto px-4 py-8 mt-10">
@@ -416,7 +374,7 @@
                 <div class="swiper-container w-full h-[300px] sm:h-[350px] md:h-[400px] lg:h-[450px] xl:h-[500px] pb-8"
                     x-ref="swiperContainer">
                     <div class="swiper-wrapper">
-                        @foreach ($property->getMedia('gallery') as $image)
+                        @foreach ($property->getMedia('*') as $image)
                             <div class="swiper-slide rounded-lg overflow-hidden flex items-center justify-center">
                                 {{-- A URL é obtida com o getUrl() da Spatie --}}
                                 <img src="{{ $image->getUrl() }}" class="w-full h-full object-cover"
@@ -830,7 +788,7 @@
         <section class="mt-16">
             <h2 class="text-2xl font-bold mb-8 text-base-content">Imóveis Similares</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @php
+                {{-- @php
                     // Simulação de dados para imóveis similares, caso $similarProperties não esteja definida
                     // No seu controlador, você buscará os imóveis similares e os passará para a view.
                     $similarProperties = $similarProperties ?? [
@@ -868,13 +826,13 @@
                             'price' => 950000,
                         ],
                     ];
-                @endphp
+                @endphp --}}
 
-                @forelse($similarProperties as $similarProperty)
+                @forelse($properties as $similarProperty)
                     <div
                         class="property-card card bg-base-100 shadow-md hover:shadow-xl transition-all duration-300 text-base-content">
                         <figure>
-                            <img src="{{ $similarProperty->image_url ?? 'https://via.placeholder.com/500x300?text=Sem+Imagem' }}"
+                            <img src="{{ $similarProperty->getFirstMediaUrl('thumbnails') ?: asset('images/placeholder.jpg') }}"
                                 alt="{{ $similarProperty->title ?? 'Imóvel' }}" class="h-48 w-full object-cover">
                         </figure>
                         <div class="card-body p-4">
@@ -903,7 +861,8 @@
                                     {{ number_format($similarProperty->price ?? 0, 2, ',', '.') }}</span>
                                 {{-- Link para a página de detalhes do imóvel similar --}}
                                 {{-- <a href="{{ route('tenant.property.show', ['tenantSlug' => $tenant->slug, 'propertyId' => $similarProperty->id]) }}" --}}
-                                <a class="btn btn-xs btn-outline btn-primary">Ver Detalhes</a>
+                                <a href="{{ route('tenant.properties.show', ['tenantSlug' => $tenant->slug, 'property' => $similarProperty->slug]) }}"
+                                    class="btn btn-xs btn-outline btn-primary">Ver Detalhes</a>
                             </div>
                         </div>
                     </div>

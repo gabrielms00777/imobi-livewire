@@ -3,10 +3,9 @@
         <a href="/" class="btn btn-ghost px-0">
             <div class="flex items-center">
                 <div class="w-10 mr-2">
-                    <img src="https://placehold.co/400x400/3b82f6/white?text=IM" alt="Logo" class="w-full rounded-lg">
+                    <img src="https://placehold.co/400x400/3b82f6/white?text=IS" alt="Logo" class="w-full rounded-lg">
                 </div>
-                <span class="text-xl font-bold text-primary">Imobiliária<span
-                        class="text-secondary">Premium</span></span>
+                <span class="text-xl font-bold text-primary">Imobi<span class="text-secondary">System</span></span>
             </div>
         </a>
     </div>

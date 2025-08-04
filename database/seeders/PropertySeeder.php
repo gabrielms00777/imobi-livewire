@@ -59,7 +59,7 @@ class PropertySeeder extends Seeder
                 'area' => 65.0,
                 'garage_spaces' => 1,
                 'amenities' => ['Academia', 'Salão de Festas'],
-                'status' => 'available',
+                'status' => 'disponivel',
                 'featured' => true, // Renomeado de is_featured
             ]);
             // Adicionando imagem via MediaLibrary
@@ -91,7 +91,7 @@ class PropertySeeder extends Seeder
                 'area' => 80.0,
                 'garage_spaces' => 1,
                 'amenities' => ['Quintal', 'Permite animais'],
-                'status' => 'available',
+                'status' => 'disponivel',
                 'featured' => false,
             ]);
             $property2->addMediaFromUrl('https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGNhc2F8ZW58MHx8MHx8fDA%3D')
@@ -125,7 +125,7 @@ class PropertySeeder extends Seeder
                 'area' => 120.0,
                 'garage_spaces' => 2,
                 'amenities' => ['Churrasqueira', 'Jardim'],
-                'status' => 'available',
+                'status' => 'disponivel',
                 'featured' => true,
             ]);
             $property3->addMediaFromUrl('https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8Y2FzYXxlbnwwfHwwfHx8MA%3D%3D')
@@ -156,7 +156,7 @@ class PropertySeeder extends Seeder
                 'area' => 280.0,
                 'garage_spaces' => 3,
                 'amenities' => ['Piscina Privativa', 'Espaço Gourmet', 'Sauna'],
-                'status' => 'available',
+                'status' => 'disponivel',
                 'featured' => false,
             ]);
             $property4->addMediaFromUrl('https://plus.unsplash.com/premium_photo-1661915661139-5b6a4e4a6fcc?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Y2FzYXxlbnwwfHwwfHx8MA%3D%3D')
@@ -187,7 +187,7 @@ class PropertySeeder extends Seeder
                 'area' => 110.0,
                 'garage_spaces' => 2,
                 'amenities' => ['Acesso à Praia', 'Piscina Condomínio', 'Academia'],
-                'status' => 'available',
+                'status' => 'disponivel',
                 'featured' => true,
             ]);
             $property5->addMediaFromUrl('https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGNhc2F8ZW58MHx8MHx8fDA%3D')
@@ -218,7 +218,7 @@ class PropertySeeder extends Seeder
                 'area' => 45.0,
                 'garage_spaces' => 1,
                 'amenities' => ['Recepção 24h', 'Sala de Reuniões', 'Estacionamento Visitantes'],
-                'status' => 'available',
+                'status' => 'disponivel',
                 'featured' => false,
             ]);
             $property6->addMediaFromUrl('https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGNhc2F8ZW58MHx8MHx8fDA%3D')
@@ -252,7 +252,7 @@ class PropertySeeder extends Seeder
                 'area' => 500.0,
                 'garage_spaces' => null,
                 'amenities' => ['Portaria 24h', 'Área Verde'],
-                'status' => 'available',
+                'status' => 'disponivel',
                 'featured' => false,
             ]);
             $property7->addMediaFromUrl('https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y2FzYXxlbnwwfHwwfHx8MA%3D%3D')
@@ -283,7 +283,7 @@ class PropertySeeder extends Seeder
                 'area' => 15000.0, // 15.000 m²
                 'garage_spaces' => 4,
                 'amenities' => ['Piscina', 'Campo de Futebol', 'Pomar', 'Nascente', 'Casa de Hóspedes'],
-                'status' => 'available',
+                'status' => 'disponivel',
                 'featured' => true,
             ]);
             $property8->addMediaFromUrl('https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y2FzYXxlbnwwfHwwfHx8MA%3D%3D')
@@ -314,7 +314,7 @@ class PropertySeeder extends Seeder
                 'area' => 1200.0,
                 'garage_spaces' => 10, // Vagas para caminhões/veículos
                 'amenities' => ['Pé Direito Alto', 'Piso Industrial', 'Escritório', 'Docas de Carga'],
-                'status' => 'available',
+                'status' => 'disponivel',
                 'featured' => false,
             ]);
             $property9->addMediaFromUrl('https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y2FzYXxlbnwwfHwwfHx8MA%3D%3D')

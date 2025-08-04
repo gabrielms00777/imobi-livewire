@@ -45,7 +45,7 @@
             @php
                 $user = auth()->user();
                 $settings = $user->tenantSettings ?? ($user->company->tenantSettings ?? null);
-                $slug = $user->slug ?? $user->company->slug ?? null;
+                $slug = $user->slug ?? ($user->company->slug ?? null);
                 // dd($user, $settings);
                 // if (!$slug) {
                 //     $slug = $user->company->slug;
@@ -55,16 +55,15 @@
                 <div class="flex items-center">
                     <div class="w-10 mr-2">
                         @if ($settings && $settings->site_logo)
-                            <img src="{{ $settings->site_logo }}" alt="Logo"
-                                class="w-full rounded-lg">
+                            <img src="{{ $settings->site_logo }}" alt="Logo" class="w-full rounded-lg">
                         @endif
                     </div>
                     @if ($settings && $settings->site_name)
-                    <span class="text-xl font-bold text-primary">{{ $settings->site_name }}</span>
+                        <span class="text-xl font-bold text-primary">{{ $settings->site_name }}</span>
                     @endif
                     {{-- <img src="https://placehold.co/400x400/3b82f6/white?text=IM" alt="Logo"
                     class="w-full rounded-lg"> --}}
-                        {{-- <span class="text-xl font-bold text-primary">Imobiliária<span
+                    {{-- <span class="text-xl font-bold text-primary">Imobiliária<span
                             class="text-secondary">Premium</span></span> --}}
                 </div>
             </a>
@@ -84,14 +83,15 @@
 
                 <x-menu-separator />
 
-                <x-menu-item title="Dashboard" icon="o-sparkles" link="/admin" />
-                <x-menu-item title="Imoveis" icon="o-sparkles" link="/admin/properties" />
+                <x-menu-item title="Dashboard" icon="o-chart-bar" link="/admin" />
+                <x-menu-item title="Imoveis" icon="o-building-office-2" link="/admin/properties" />
 
                 <x-menu-sub title="Configurações" icon="o-cog-6-tooth">
-                    <x-menu-item title="Usuarios" icon="o-wifi" :link="route('admin.users.index')" />
-                    <x-menu-item title="Site" icon="o-archive-box" :link="route('admin.tenant-settings.index')" />
+                    {{-- <x-menu-item title="Usuarios" icon="o-users" :link="route('admin.users.index')" /> --}}
+                    <x-menu-item title="Site" icon="o-globe-alt" :link="route('admin.tenant-settings.index')" />
                 </x-menu-sub>
-                <x-menu-item title="ir para o site" icon="o-sparkles" :link="route('tenant.home', ['tenantSlug' => $slug])" />
+
+                <x-menu-item title="ir para o site" icon="o-arrow-top-right-on-square" external link="{{route('tenant.home', ['tenantSlug' => $slug])}}" />
             </x-menu>
         </x-slot:sidebar>
 

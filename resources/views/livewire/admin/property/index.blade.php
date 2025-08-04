@@ -60,7 +60,8 @@
             @scope('actions', $property)
             {{-- @dd($property) --}}
                 <div class="flex items-center gap-2">
-                    <x-button icon="o-eye" link="{{ route('tenant.properties.show', ['tenantSlug' => ($property->user->slug ?? $property->company->slug), 'property' => $property->slug]) }}" target="_blank" class="btn-ghost btn-sm" tooltip="Visualizar no site" />
+                    {{-- <a href="{{ route('tenant.properties.show', ['tenantSlug' => ($property->user->slug ?? $property->company->slug), 'property' => $property->slug]) }}" target="_blank" class="btn-ghost btn-sm" tooltip="Visualizar no site" ></a> --}}
+                    <x-button icon="o-eye" external  link="{{ route('tenant.properties.show', ['tenantSlug' => ($property->user->slug ?? $property->company->slug), 'property' => $property->slug]) }}" target="_blank" class="btn-ghost btn-sm" tooltip="Visualizar no site" />
                     {{-- <x-button icon="o-eye" link="{{ $property->user->slug ?? $property->company->slug }}/imovel/{{ $property->slug }}" target="_blank" class="btn-ghost btn-sm" tooltip="Visualizar no site" /> --}}
                     <x-button icon="o-pencil" link="/admin/properties/{{ $property->id }}/edit" class="btn-ghost btn-sm" tooltip="Editar" />
                     <x-button icon="o-trash" wire:click="openDeleteModal({{ $property->id }})" spinner class="btn-ghost btn-sm text-error" tooltip="Excluir" />

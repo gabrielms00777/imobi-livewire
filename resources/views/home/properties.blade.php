@@ -112,11 +112,11 @@
 </head>
 
 <body class="min-h-screen flex flex-col">
-    <header x-data="{ isScrolled: false }" @scroll.window="isScrolled = window.scrollY > 300"
+    {{-- <header x-data="{ isScrolled: false }" @scroll.window="isScrolled = window.scrollY > 300"
         class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
         :class="isScrolled ? 'bg-white shadow-md dark:bg-neutral' : 'bg-transparent'">
 
-        <div class="container mx-auto px-4">
+        <div class="mx-auto px-4">
             <div class="navbar">
                 <div class="flex-1">
                     <a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug]) }}" class="px-0">
@@ -131,7 +131,6 @@
                                 @endphp
                                 <span class="text-xl font-bold text-primary">{{ $firstWord ?? '' }}</span>
                                 @if (!empty($remainingWords))
-                                    {{-- Se houver palavras restantes, exibe-as em secondary --}}
                                     <span class="text-xl font-bold text-secondary">{{ $remainingWords }}</span>
                                 @endif
                             @elseif ($tenantSettings->site_logo && $tenantSettings->header_display_type == 'logo_only')
@@ -145,7 +144,6 @@
                                 @endphp
                                 <span class="text-xl font-bold text-primary">{{ $firstWord ?? '' }}</span>
                                 @if (!empty($remainingWords))
-                                    {{-- Se houver palavras restantes, exibe-as em secondary --}}
                                     <span class="text-xl font-bold text-secondary">{{ $remainingWords }}</span>
                                 @endif
                             @else
@@ -170,7 +168,7 @@
                         </ul>
                     </nav>
 
-                    <div class="divider divider-horizontal h-6 mx-2"></div> --}}
+                    <div class="divider divider-horizontal h-6 mx-2"></div> 
 
                     <div class="flex items-center gap-2 mr-4">
                         @if ($tenantSettings->social_facebook)
@@ -202,7 +200,7 @@
                     <a href="https://wa.me/{{ $tenantSettings->social_whatsapp }}"
                         class="btn btn-primary btn-sm md:btn-md gap-2">
                         <i class="fab fa-whatsapp"></i>
-                        <span class="hidden sm:inline">{{ $tenantSettings->contact_phone }}</span>
+                        <span class="hidden sm:inline">{{ $tenantSettings->social_whatsapp }}</span>
                     </a>
                 </div>
 
@@ -223,7 +221,6 @@
             <label for="mobile-menu" class="drawer-overlay"></label>
             <div class="menu p-4 w-80 min-h-full bg-base-100 text-base-content">
                 <div class="flex items-center justify-between mb-6">
-                    {{-- Lembre-se de adaptar este link para o seu tenant --}}
                     <a href="{{ route('tenant.home', ['tenantSlug' => $tenant->slug]) }}"
                         class="text-xl font-bold text-primary">
                         {{ $tenantSettings->site_name }}
@@ -233,7 +230,6 @@
                     </label>
                 </div>
 
-                {{-- O formulário de filtros entra aqui --}}
                 <form method="GET" action="{{ route('tenant.properties', ['tenantSlug' => $tenant->slug]) }}">
                     <h3 class="text-xl font-bold mb-6">Filtros</h3>
                     <div class="space-y-6">
@@ -326,7 +322,7 @@
                                 <input type="number" name="max_area" placeholder="Máximo"
                                     class="input input-bordered w-full" value="{{ $filters['max_area'] }}" />
                             </div>
-                        </div> --}}
+                        </div> 
 
                         <div class="pt-4 space-y-2">
                             <button type="submit" class="btn btn-primary w-full">
@@ -342,7 +338,6 @@
 
                 <div class="divider my-4"></div>
 
-                {{-- Opcional: Manter links sociais e contato na sidebar --}}
                 <div class="flex justify-center gap-4 mb-6">
                     @if ($tenantSettings->social_facebook)
                         <a href="{{ $tenantSettings->social_facebook }}" class="btn btn-ghost btn-circle">
@@ -366,7 +361,8 @@
                 </a>
             </div>
         </div>
-    </header>
+    </header> --}}
+    <x-home.header :tenant="$tenant" :tenantSettings="$tenantSettings" />
 
     <!-- Sidebar Fixa (Desktop) -->
     <aside class="fixed-sidebar hidden mt-16 lg:flex flex-col p-6">
@@ -621,11 +617,11 @@
         </nav> --}}
 
         <!-- Hero Section com Formulário de Busca Integrado -->
+        {{-- <div id="hero-section"
+            class="relative min-h-[400px] flex items-center justify-center mb-4 mt-4 rounded-box shadow-lg overflow-hidden bg-linear-to-r from-cyan-500 to-blue-500"> --}}
         <div id="hero-section"
-            class="relative min-h-[400px] flex items-center justify-center mb-4 mt-4 rounded-box shadow-lg overflow-hidden bg-linear-to-r from-cyan-500 to-blue-500">
-            {{-- style="background-image: url('https://placehold.co/1600x800/1e40af/ffffff?text=Encontre+seu+imóvel+perfeito'); background-size: cover; background-position: center;"> --}}
-            {{-- style="background-image: url('https://placehold.co/1600x800/1e40af/ffffff'); background-size: cover; background-position: center;"> --}}
-            <div class="hero-overlay bg-opacity-60 rounded-box absolute inset-0"></div>
+            class="relative min-h-[400px] flex items-center justify-center mb-4 mt-4 rounded-box shadow-lg overflow-hidden bg-linear-{{ $tenantSettings->hero_gradient_direction ?? 'to-r' }} from-[{{ $tenantSettings->hero_gradient_from_color ?? 'cyan-500'}}] to-[{{ $tenantSettings->hero_gradient_to_color ?? 'blue-500' }}]">
+            <div class="hero-overlay bg-opacity-40 rounded-box absolute inset-0"></div>
 
             <div class="relative z-10 flex flex-col items-center justify-center h-full text-neutral-content p-4">
                 <div class="text-center max-w-2xl">
@@ -833,7 +829,8 @@
                                 <div class="relative w-full h-full overflow-hidden">
                                     {{-- Acessa a coleção de mídia 'gallery' do modelo Property --}}
                                     @php
-                                        $galleryImages = $property->getMedia('gallery');
+                                        $galleryImages = $property->getMedia('*');
+                                        // dd($galleryImages);
                                         $imageCount = $galleryImages->count();
                                     @endphp
 
@@ -903,7 +900,6 @@
                         <div class="card-body lg:w-3/5 p-6">
                             {{-- Preço do imóvel --}}
                             <h3 class="card-title text-2xl">R$ {{ number_format($property->price, 2, ',', '.') }}
-                                {{-- Se for para aluguel, exibe o preço do aluguel --}}
                                 @if ($property->purpose === 'aluguel' || $property->purpose === 'ambos')
                                     /mês
                                 @endif

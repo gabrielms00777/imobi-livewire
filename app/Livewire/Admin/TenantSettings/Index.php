@@ -17,7 +17,7 @@ class Index extends Component
 
     public TenantSettingsForm $form;
 
-    public string $tab = 'homepage'; //'homepage'; // Para controlar a aba ativa
+    public string $tab = 'general'; //'homepage'; // Para controlar a aba ativa
 
     /**
      * O método mount é executado quando o componente é inicializado.

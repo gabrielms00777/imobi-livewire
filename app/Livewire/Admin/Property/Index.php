@@ -84,9 +84,9 @@ class Index extends Component
     public function headers(): array
     {
         return [
-            ['key' => 'id', 'label' => '#', 'class' => 'w-16'],
-            ['key' => 'thumbnail', 'label' => 'Foto', 'class' => 'w-500', 'sortable' => false],
-            ['key' => 'title', 'label' => 'Título', 'class' => 'w-64'],
+            // ['key' => 'id', 'label' => '#', 'class' => 'w-16'],
+            ['key' => 'thumbnail', 'label' => 'Foto', 'sortable' => false],
+            ['key' => 'title', 'label' => 'Título'],
             ['key' => 'type', 'label' => 'Tipo'],
             ['key' => 'price', 'label' => 'Preço'],
             ['key' => 'status', 'label' => 'Status'],

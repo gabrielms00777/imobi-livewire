@@ -75,7 +75,7 @@ class PropertyForm extends Form
             // Opções de tipo de imóvel atualizadas para incluir 'sitio/chacara' e 'galpao'
             'type' => 'required|string|in:casa,apartamento,terreno,comercial,sitio/chacara,galpao,outro',
             'purpose' => 'required|string|in:venda,aluguel,ambos',
-            'status' => 'required|string|in:available,vendido,alugado,rascunho',
+            'status' => 'required|string|in:disponivel,vendido,alugado,rascunho',
 
             // // Validação condicional de preço e preço de aluguel
             'price' => [
